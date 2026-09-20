@@ -1,9 +1,27 @@
 import axios from "axios";
+import { Platform } from "react-native";
+const API_BASE = "http://localhost:5000/api";
 
-const API_URL = "http://localhost:5000/api";
+const client = axios.create({ baseURL: API_BASE });
 
-export const getItems = () => axios.get(`${API_URL}/items`);
-export const createItem = (item) => axios.post(`${API_URL}/items`, item);
-export const updateItem = (id, item) =>
-  axios.put(`${API_URL}/items/${id}`, item);
-export const deleteItem = (id) => axios.delete(`${API_URL}/items/${id}`);
+export const getItems = () => client.get("/items");
+export const createItem = (item) => client.post("/items", item);
+export const updateItem = (id, item) => client.put(`/items/${id}`, item);
+export const deleteItem = (id) => client.delete(`/items/${id}`);
+export const getSummary = () => client.get("/items/summary");
+export const getExportUrl = () => `${API_BASE}/items/export`;
+export const API_ORIGIN = "http://localhost:5000";
+export const uploadPhoto = async (itemId, uri) => {
+  const formData = new FormData();
+
+  if (Platform.OS === "web") {
+    const blob = await fetch(uri).then((res) => res.blob());
+    formData.append("photo", blob, "photo.jpg");
+  } else {
+    formData.append("photo", { uri, name: "photo.jpg", type: "image/jpeg" });
+  }
+
+  return client.post(`/items/${itemId}/photo`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+};
