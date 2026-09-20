@@ -26,7 +26,7 @@ export default function App() {
   const [items, setItems] = useState([]);
   const [summary, setSummary] = useState({ total_items: 0, total_value: 0 });
   const [imageUri, setImageUri] = useState(null);
-  const [formKey, setFormKey] = useState(0); // bump this to force-reset the image picker
+  const [formKey, setFormKey] = useState(0);
 
   const [name, setName] = useState("");
   const [purchasePrice, setPurchasePrice] = useState("");
@@ -69,8 +69,6 @@ export default function App() {
     loadItems();
   }, []);
 
-  // Strips anything that isn't a digit or period, and collapses extra periods
-  // down to one — so "12.5.6" becomes "12.56", not rejected outright.
   const handlePriceChange = (text) => {
     const filtered = text.replace(/[^0-9.]/g, "");
     const parts = filtered.split(".");
@@ -142,149 +140,152 @@ export default function App() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Insured Assets</Text>
+    <ScrollView contentContainerStyle={styles.scrollContent}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Insured Assets</Text>
 
-      <View style={styles.summaryBox}>
-        <Text style={styles.summaryValue}>
-          ${summary.total_value?.toLocaleString() ?? 0}
-        </Text>
-        <Text style={styles.summaryLabel}>
-          Total value — {summary.total_items ?? 0} items
-        </Text>
-      </View>
-
-      <ImagePickerField
-        key={formKey}
-        onImagePicked={(uri) => setImageUri(uri)}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Item name (e.g. Samsung 65in TV)"
-        placeholderTextColor="#999"
-        value={name}
-        onChangeText={setName}
-      />
-
-      <View style={styles.pickerWrapper}>
-        <Picker selectedValue={category} onValueChange={handleCategoryChange}>
-          {categories.map((c) => (
-            <Picker.Item key={c} label={c} value={c} />
-          ))}
-          <Picker.Item label="+ Add new category..." value={ADD_NEW} />
-        </Picker>
-      </View>
-      {addingCategory && (
-        <View style={styles.inlineAddRow}>
-          <TextInput
-            style={[styles.input, styles.inlineInput]}
-            placeholder="New category name"
-            placeholderTextColor="#999"
-            value={newCategoryText}
-            onChangeText={setNewCategoryText}
-          />
-          <Button title="Add" onPress={confirmNewCategory} />
+        <View style={styles.summaryBox}>
+          <Text style={styles.summaryValue}>
+            ${summary.total_value?.toLocaleString() ?? 0}
+          </Text>
+          <Text style={styles.summaryLabel}>
+            Total value — {summary.total_items ?? 0} items
+          </Text>
         </View>
-      )}
 
-      <TextInput
-        style={styles.input}
-        placeholder="Purchase price ($)"
-        placeholderTextColor="#999"
-        keyboardType="decimal-pad"
-        value={purchasePrice}
-        onChangeText={handlePriceChange}
-      />
+        <ImagePickerField
+          key={formKey}
+          onImagePicked={(uri) => setImageUri(uri)}
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Serial number"
-        placeholderTextColor="#999"
-        value={serialNumber}
-        onChangeText={setSerialNumber}
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Item name (e.g. Samsung 65in TV)"
+          placeholderTextColor="#999"
+          value={name}
+          onChangeText={setName}
+        />
 
-      <View style={styles.pickerWrapper}>
-        <Picker selectedValue={condition} onValueChange={setCondition}>
-          {CONDITIONS.map((c) => (
-            <Picker.Item key={c} label={c} value={c} />
-          ))}
-        </Picker>
-      </View>
-
-      <View style={styles.pickerWrapper}>
-        <Picker selectedValue={roomLocation} onValueChange={handleRoomChange}>
-          {rooms.map((r) => (
-            <Picker.Item key={r} label={r} value={r} />
-          ))}
-          <Picker.Item label="+ Add new room..." value={ADD_NEW} />
-        </Picker>
-      </View>
-      {addingRoom && (
-        <View style={styles.inlineAddRow}>
-          <TextInput
-            style={[styles.input, styles.inlineInput]}
-            placeholder="New room name"
-            placeholderTextColor="#999"
-            value={newRoomText}
-            onChangeText={setNewRoomText}
-          />
-          <Button title="Add" onPress={confirmNewRoom} />
+        <View style={styles.pickerWrapper}>
+          <Picker selectedValue={category} onValueChange={handleCategoryChange}>
+            {categories.map((c) => (
+              <Picker.Item key={c} label={c} value={c} />
+            ))}
+            <Picker.Item label="+ Add new category..." value={ADD_NEW} />
+          </Picker>
         </View>
-      )}
-
-      <Button title="Add Asset" onPress={handleAdd} />
-
-      <FlatList
-        style={{ marginTop: 20 }}
-        data={items}
-        keyExtractor={(item) => item.id.toString()}
-        scrollEnabled={false}
-        renderItem={({ item }) => (
-          <View
-            style={[
-              styles.item,
-              { flexDirection: "row", alignItems: "center" },
-            ]}
-          >
-            {item.photo_url ? (
-              <Image
-                source={{ uri: `${API_ORIGIN}${item.photo_url}` }}
-                style={styles.thumbnail}
-              />
-            ) : (
-              <View style={[styles.thumbnail, styles.thumbnailPlaceholder]} />
-            )}
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemMeta}>
-                {item.category || "Uncategorized"} · {item.condition} ·{" "}
-                {item.room_location || "no location set"}
-              </Text>
-              <Text style={styles.itemValue}>
-                $
-                {(
-                  item.current_value ??
-                  item.purchase_price ??
-                  0
-                ).toLocaleString()}
-              </Text>
-            </View>
+        {addingCategory && (
+          <View style={styles.inlineAddRow}>
+            <TextInput
+              style={[styles.input, styles.inlineInput]}
+              placeholder="New category name"
+              placeholderTextColor="#999"
+              value={newCategoryText}
+              onChangeText={setNewCategoryText}
+            />
+            <Button title="Add" onPress={confirmNewCategory} />
           </View>
         )}
-      />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Purchase price ($)"
+          placeholderTextColor="#999"
+          keyboardType="decimal-pad"
+          value={purchasePrice}
+          onChangeText={handlePriceChange}
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Serial number"
+          placeholderTextColor="#999"
+          value={serialNumber}
+          onChangeText={setSerialNumber}
+        />
+
+        <View style={styles.pickerWrapper}>
+          <Picker selectedValue={condition} onValueChange={setCondition}>
+            {CONDITIONS.map((c) => (
+              <Picker.Item key={c} label={c} value={c} />
+            ))}
+          </Picker>
+        </View>
+
+        <View style={styles.pickerWrapper}>
+          <Picker selectedValue={roomLocation} onValueChange={handleRoomChange}>
+            {rooms.map((r) => (
+              <Picker.Item key={r} label={r} value={r} />
+            ))}
+            <Picker.Item label="+ Add new room..." value={ADD_NEW} />
+          </Picker>
+        </View>
+        {addingRoom && (
+          <View style={styles.inlineAddRow}>
+            <TextInput
+              style={[styles.input, styles.inlineInput]}
+              placeholder="New room name"
+              placeholderTextColor="#999"
+              value={newRoomText}
+              onChangeText={setNewRoomText}
+            />
+            <Button title="Add" onPress={confirmNewRoom} />
+          </View>
+        )}
+
+        <Button title="Add Asset" onPress={handleAdd} />
+
+        <FlatList
+          style={{ marginTop: 20 }}
+          data={items}
+          keyExtractor={(item) => item.id.toString()}
+          scrollEnabled={false}
+          renderItem={({ item }) => (
+            <View
+              style={[
+                styles.item,
+                { flexDirection: "row", alignItems: "center" },
+              ]}
+            >
+              {item.photo_url ? (
+                <Image
+                  source={{ uri: `${API_ORIGIN}${item.photo_url}` }}
+                  style={styles.thumbnail}
+                />
+              ) : (
+                <View style={[styles.thumbnail, styles.thumbnailPlaceholder]} />
+              )}
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemMeta}>
+                  {item.category || "Uncategorized"} · {item.condition} ·{" "}
+                  {item.room_location || "no location set"}
+                </Text>
+                <Text style={styles.itemValue}>
+                  $
+                  {(
+                    item.current_value ??
+                    item.purchase_price ??
+                    0
+                  ).toLocaleString()}
+                </Text>
+              </View>
+            </View>
+          )}
+        />
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    alignItems: "center",
+  },
   container: {
-    flex: 1,
-    padding: 20,
     width: "100%",
-    maxWidth: 480,
-    alignSelf: "center",
+    maxWidth: 600,
+    padding: 20,
   },
   title: { fontSize: 24, fontWeight: "bold", marginBottom: 12 },
   summaryBox: {

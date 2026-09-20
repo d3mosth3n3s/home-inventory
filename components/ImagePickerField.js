@@ -37,6 +37,6 @@ export default function ImagePickerField({ onImagePicked }) {
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: "center" },
+  container: { alignItems: "center", padding: 8 },
   image: { width: 120, height: 120, marginTop: 8 },
 });
