@@ -16,6 +16,7 @@ import {
   createItem,
   getSummary,
   uploadPhoto,
+  analyzeImage,
   API_ORIGIN,
 } from "./api";
 
@@ -27,6 +28,8 @@ export default function App() {
   const [summary, setSummary] = useState({ total_items: 0, total_value: 0 });
   const [imageUri, setImageUri] = useState(null);
   const [formKey, setFormKey] = useState(0);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState("");
 
   const [name, setName] = useState("");
   const [purchasePrice, setPurchasePrice] = useState("");
@@ -68,6 +71,50 @@ export default function App() {
   useEffect(() => {
     loadItems();
   }, []);
+
+  const handleImagePicked = async (uri) => {
+    setImageUri(uri);
+    setAnalysisError("");
+    setAnalyzing(true);
+
+    try {
+      const response = await analyzeImage(uri);
+      const detectedItem = response.data?.items?.[0];
+
+      if (!detectedItem) {
+        setAnalysisError("No item was detected. Please enter the details manually.");
+        return;
+      }
+
+      const detectedName =
+        detectedItem.item_name ||
+        [detectedItem.brand, detectedItem.model].filter(Boolean).join(" ") ||
+        detectedItem.class_name ||
+        "Detected item";
+      setName(detectedName);
+      setSerialNumber(detectedItem.serial_number || "");
+
+      if (detectedItem.category) {
+        const detectedCategory =
+          detectedItem.category.charAt(0).toUpperCase() +
+          detectedItem.category.slice(1);
+        setCategories((previous) =>
+          previous.includes(detectedCategory)
+            ? previous
+            : [...previous, detectedCategory],
+        );
+        setCategory(detectedCategory);
+      }
+    } catch (error) {
+      console.error("Image analysis failed", error);
+      const detail = error.response?.data?.detail;
+      setAnalysisError(
+        detail || "Image analysis failed. You can still enter the item manually.",
+      );
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   const handlePriceChange = (text) => {
     const filtered = text.replace(/[^0-9.]/g, "");
@@ -135,6 +182,7 @@ export default function App() {
     setSerialNumber("");
     setCondition("good");
     setImageUri(null);
+    setAnalysisError("");
     setFormKey((k) => k + 1);
     loadItems();
   };
@@ -155,8 +203,10 @@ export default function App() {
 
         <ImagePickerField
           key={formKey}
-          onImagePicked={(uri) => setImageUri(uri)}
+          onImagePicked={handleImagePicked}
         />
+        {analyzing && <Text style={styles.statusText}>Analyzing image...</Text>}
+        {!!analysisError && <Text style={styles.errorText}>{analysisError}</Text>}
 
         <TextInput
           style={styles.input}
@@ -297,6 +347,8 @@ const styles = StyleSheet.create({
   },
   summaryValue: { fontSize: 28, fontWeight: "bold" },
   summaryLabel: { fontSize: 13, color: "#666", marginTop: 2 },
+  statusText: { color: "#555", marginBottom: 8 },
+  errorText: { color: "#b00020", marginBottom: 8 },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",

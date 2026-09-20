@@ -11,15 +11,32 @@ export const deleteItem = (id) => client.delete(`/items/${id}`);
 export const getSummary = () => client.get("/items/summary");
 export const getExportUrl = () => `${API_BASE}/items/export`;
 export const API_ORIGIN = "http://localhost:5000";
-export const uploadPhoto = async (itemId, uri) => {
-  const formData = new FormData();
 
+const appendImage = async (formData, uri, fieldName) => {
   if (Platform.OS === "web") {
     const blob = await fetch(uri).then((res) => res.blob());
-    formData.append("photo", blob, "photo.jpg");
+    formData.append(fieldName, blob, "photo.jpg");
   } else {
-    formData.append("photo", { uri, name: "photo.jpg", type: "image/jpeg" });
+    formData.append(fieldName, {
+      uri,
+      name: "photo.jpg",
+      type: "image/jpeg",
+    });
   }
+};
+
+export const analyzeImage = async (uri) => {
+  const formData = new FormData();
+  await appendImage(formData, uri, "image");
+
+  return client.post("/analyze-image", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+};
+
+export const uploadPhoto = async (itemId, uri) => {
+  const formData = new FormData();
+  await appendImage(formData, uri, "photo");
 
   return client.post(`/items/${itemId}/photo`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
