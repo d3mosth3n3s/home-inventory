@@ -1,5 +1,23 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
+# Python generated files
+__pycache__/
+*.py[cod]
+
+# Python virtual environments
+venv/
+.venv/
+
+# Runtime data
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Local model files
+*.pt
+*.onnx
+
 # dependencies
 node_modules/
 
