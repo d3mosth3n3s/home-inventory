@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+python-multipart
+streamlit
+pandas
+numpy
+Pillow
+streamlit_drawable_canvas
+ultralytics
+easyocr
