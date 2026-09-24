@@ -22,8 +22,8 @@ def load_detection_model():
     return YOLO(str(DETECTION_MODEL_PATH))
 
 
-def detect_equipment(image: Image.Image) -> list[dict]:
-    """Run YOLO on the image and return detections sorted top-to-bottom."""
+def detect_inventory_objects(image: Image.Image) -> list[dict]:
+    """Run YOLO on the image and return detected inventory objects sorted top-to-bottom."""
     model = load_detection_model()
     results = model.predict(
         source=np.array(image),

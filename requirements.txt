@@ -5,7 +5,6 @@ streamlit
 pandas
 numpy
 Pillow
-rapidfuzz
 streamlit_drawable_canvas
 ultralytics
 easyocr

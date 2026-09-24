@@ -2,8 +2,6 @@ from functools import lru_cache
 
 import numpy as np
 
-from backend.config import DETECTION_MODEL_PATH
-
 
 @lru_cache(maxsize=1)
 def load_ocr_reader():

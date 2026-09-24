@@ -1,11 +1,11 @@
-from backend.services.detection import detect_equipment
+from backend.services.detection import detect_inventory_objects
 from backend.services.ocr import extract_text_from_boxes
 from backend.services.parser import parse_inventory_record
 
 
 def analyze_image(image, boxes=None) -> dict:
     """Run the core household inventory analysis pipeline on an image."""
-    detected_boxes = boxes or detect_equipment(image)
+    detected_boxes = boxes or detect_inventory_objects(image)
     ocr_texts = extract_text_from_boxes(image, detected_boxes)
 
     items = []

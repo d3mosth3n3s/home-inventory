@@ -1,10 +1,7 @@
 import re
 
 import pandas as pd
-from rapidfuzz import fuzz, process
 
-from backend.config import SESSION_REF_PATH
-from backend.services.reference_data import ensure_session_dir, load_confirmed_reference
 
 KNOWN_BRANDS = {
     "APPLE", "SAMSUNG", "LG", "SONY", "PANASONIC", "HP", "DELL", "LENOVO",
@@ -157,14 +154,7 @@ def parse_inventory_record(ocr_text: str) -> dict:
     serial = extract_serial(text)
     category = infer_category_from_text(text)
 
-    confirmed = load_confirmed_reference()
     match_type = "ocr_raw"
-    if not confirmed.empty:
-        names = confirmed["item_name"].fillna("").astype(str).str.upper().tolist()
-        if names:
-            result = process.extractOne(text.upper(), names, scorer=fuzz.token_set_ratio)
-            if result and result[1] >= 75:
-                match_type = f"confirmed_fuzzy({result[1]})"
 
     return {
         "category": category,
