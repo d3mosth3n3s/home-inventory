@@ -1,11 +1,24 @@
 import axios from "axios";
 import { Platform } from "react-native";
+import { supabase } from "./lib/supabase";
 
 const API_ORIGIN = "https://home-inventory-5p3d.onrender.com";
 const API_BASE = `${API_ORIGIN}/api`;
 
 const client = axios.create({
   baseURL: API_BASE,
+});
+
+client.interceptors.request.use(async (config) => {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (session) {
+    config.headers.Authorization = `Bearer ${session.access_token}`;
+  }
+
+  return config;
 });
 
 export const getItems = () => client.get("/items");
