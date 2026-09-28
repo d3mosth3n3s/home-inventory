@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { View, ActivityIndicator } from "react-native";
 import { supabase } from "./lib/supabase";
 import LoginScreen from "./components/LoginScreen";
+import LandingScreen from "./components/LandingScreen";
 import InventoryApp from "./InventoryApp";
 
 export default function App() {
@@ -12,14 +14,23 @@ export default function App() {
       setSession(session);
       setLoading(false);
     });
+
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
       },
     );
+
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  if (loading) return null;
-  return session ? <InventoryApp session={session} /> : <LoginScreen />;
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return session ? <InventoryApp session={session} /> : <LandingScreen />;
 }

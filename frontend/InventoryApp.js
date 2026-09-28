@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import ImagePickerField from "./components/ImagePickerField";
+import { supabase } from "./lib/supabase";
 import {
   getItems,
   createItem,
@@ -55,6 +56,11 @@ export default function App() {
   const [roomLocation, setRoomLocation] = useState("Living Room");
   const [addingRoom, setAddingRoom] = useState(false);
   const [newRoomText, setNewRoomText] = useState("");
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) console.error(error);
+  };
 
   const loadItems = () => {
     getItems()
@@ -143,6 +149,8 @@ export default function App() {
     <ScrollView contentContainerStyle={styles.scrollContent}>
       <View style={styles.container}>
         <Text style={styles.title}>Insured Assets</Text>
+
+        <Button title="Sign Out" onPress={handleSignOut} color="#cc0000" />
 
         <View style={styles.summaryBox}>
           <Text style={styles.summaryValue}>
