@@ -255,6 +255,7 @@ async def analyze_uploaded_image(image: UploadFile = File(...)) -> dict:
     try:
         from PIL import Image
         analyzed = analyze_image(Image.open(io.BytesIO(contents)).convert("RGB"))
+        print("ANALYSIS RESULT:", analyzed)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except Exception as exc:

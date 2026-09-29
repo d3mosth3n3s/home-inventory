@@ -89,7 +89,7 @@ export default function App() {
       const detectedName =
         detectedItem.item_name ||
         [detectedItem.brand, detectedItem.model].filter(Boolean).join(" ") ||
-        detectedItem.class_name ||
+        detectedItem.box?.class_name ||
         "Detected item";
       setName(detectedName);
       setSerialNumber(detectedItem.serial_number || "");
@@ -208,13 +208,16 @@ export default function App() {
         {analyzing && <Text style={styles.statusText}>Analyzing image...</Text>}
         {!!analysisError && <Text style={styles.errorText}>{analysisError}</Text>}
 
-        <TextInput
-          style={styles.input}
-          placeholder="Item name (e.g. Samsung 65in TV)"
-          placeholderTextColor="#999"
-          value={name}
-          onChangeText={setName}
-        />
+<View style={styles.labeledInput}>
+  <Text style={styles.inputLabel}>Object Detected:</Text>
+  <TextInput
+    style={styles.inlineTextInput}
+    placeholder="No object detected"
+    placeholderTextColor="#999"
+    value={name}
+    onChangeText={setName}
+  />
+</View>
 
         <View style={styles.pickerWrapper}>
           <Picker selectedValue={category} onValueChange={handleCategoryChange}>
@@ -237,22 +240,28 @@ export default function App() {
           </View>
         )}
 
-        <TextInput
-          style={styles.input}
-          placeholder="Purchase price ($)"
-          placeholderTextColor="#999"
-          keyboardType="decimal-pad"
-          value={purchasePrice}
-          onChangeText={handlePriceChange}
-        />
+<View style={styles.labeledInput}>
+  <Text style={styles.inputLabel}>Purchase Price: $</Text>
+  <TextInput
+    style={styles.inlineTextInput}
+    placeholder="0.00"
+    placeholderTextColor="#999"
+    keyboardType="decimal-pad"
+    value={purchasePrice}
+    onChangeText={handlePriceChange}
+  />
+</View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Serial number"
-          placeholderTextColor="#999"
-          value={serialNumber}
-          onChangeText={setSerialNumber}
-        />
+<View style={styles.labeledInput}>
+  <Text style={styles.inputLabel}>Serial Number:</Text>
+  <TextInput
+    style={styles.inlineTextInput}
+    placeholder="Enter serial number"
+    placeholderTextColor="#999"
+    value={serialNumber}
+    onChangeText={setSerialNumber}
+  />
+</View>
 
         <View style={styles.pickerWrapper}>
           <Picker selectedValue={condition} onValueChange={setCondition}>
@@ -381,4 +390,26 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
   },
   thumbnailPlaceholder: { borderWidth: 1, borderColor: "#ddd" },
+
+  labeledInput: {
+  flexDirection: "row",
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 4,
+  marginBottom: 10,
+  paddingHorizontal: 8,
+  minHeight: 42,
+},
+
+inputLabel: {
+  fontSize: 16,
+  marginRight: 5,
+},
+
+inlineTextInput: {
+  flex: 1,
+  fontSize: 16,
+  paddingVertical: 8,
+},
 });
