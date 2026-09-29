@@ -18,6 +18,9 @@ data/
 *.pt
 *.onnx
 
+# Include the YOLO model required by ReCovered
+!models/yolov8n.pt
+
 # dependencies
 node_modules/
 
