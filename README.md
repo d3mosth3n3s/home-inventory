@@ -1,29 +1,29 @@
 # To Run
 
-#Terminal 1:
-#create a virtual environment
-python -m venv .venv
-#activate virtual environment
-.\.venv\Scripts\Activate.ps1
-#install requirements
-pip install -r requirements.txt
-#at project root, run
-python -m uvicorn backend.app:app --reload --host 127.0.0.1 --port 5000
-#the following should display
-Uvicorn running on http://127.0.0.1:5000
-Application startup complete.
+#Terminal 1: \n
+#create a virtual environment \n
+python -m venv .venv \n
+#activate virtual environment \n
+.\.venv\Scripts\Activate.ps1 \n
+#install requirements \n
+pip install -r requirements.txt \n
+#at project root, run \n
+python -m uvicorn backend.app:app --reload --host 127.0.0.1 --port 5000 \n
+#the following should display \n
+Uvicorn running on http://127.0.0.1:5000 \n
+Application startup complete. \n
 
-#Terminal 2:
-#path should include (.venv), run
-cd frontend
-#install package
-npm install
-#then run
-npm run web
-#the following should display
-Starting Metro Bundler
-Web: http://localhost:8081
-#browser should open automatically
+#Terminal 2: \n
+#path should include (.venv), run \n
+cd frontend \n
+#install package \n
+npm install \n
+#then run \n
+npm run web \n
+#the following should display \n
+Starting Metro Bundler \n
+Web: http://localhost:8081 \n
+#browser should open automatically \n
 
 #previous run instructions
 #Open two terminals. In the first, run:`cd backend`, `venv\Scripts\Activate.ps1`, and `python app.py`.
