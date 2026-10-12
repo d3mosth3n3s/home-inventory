@@ -1,15 +1,14 @@
 import io
 
-from PIL import Image
-
 from backend.services.detection import detect_inventory_objects
 from backend.services.google_vision import detect_objects_with_google
+from backend.services.gemini import identify_inventory_item
 from backend.services.ocr import extract_text_from_boxes
 from backend.services.parser import parse_inventory_record
 
 
 def detect_with_google(image):
-    """Convert Google's normalized bounding boxes to YOLO-style pixel boxes."""
+    """Convert Google's normalized bounding boxes to pixel coordinates."""
 
     image_bytes = io.BytesIO()
     image.save(image_bytes, format="PNG")
@@ -43,8 +42,9 @@ def detect_with_google(image):
 
 
 def analyze_image(image, boxes=None) -> dict:
-    """Analyze household inventory images using Google Vision with YOLO fallback."""
+    """Analyze inventory images using Google Vision, Gemini, and OCR."""
 
+    # Step 1: Detect objects using Google Vision, with YOLO fallback.
     if boxes is not None:
         detected_boxes = boxes
     else:
@@ -57,18 +57,59 @@ def analyze_image(image, boxes=None) -> dict:
             detected_boxes = detect_inventory_objects(image)
             print("Object detection provider: YOLO")
 
+    # Step 2: Extract text from detected objects.
     ocr_texts = extract_text_from_boxes(image, detected_boxes)
 
     items = []
+    width, height = image.size
 
+    # Step 3: Analyze each detected object.
     for index, box in enumerate(detected_boxes):
         text = ocr_texts[index] if index < len(ocr_texts) else ""
-
         parsed = parse_inventory_record(text)
 
-        # Use the detected object label when OCR cannot identify the item.
+        # Crop the individual object for Gemini.
+        x1 = max(0, min(width, int(box["x1"])))
+        y1 = max(0, min(height, int(box["y1"])))
+        x2 = max(0, min(width, int(box["x2"])))
+        y2 = max(0, min(height, int(box["y2"])))
+
+        gemini_result = {}
+
+        if x2 > x1 and y2 > y1:
+            try:
+                cropped_image = image.crop((x1, y1, x2, y2))
+                gemini_result = identify_inventory_item(
+                    cropped_image.convert("RGB")
+                )
+
+                if not isinstance(gemini_result, dict):
+                    raise ValueError("Gemini returned an invalid result")
+
+                print("Gemini identification:", gemini_result)
+
+            except Exception as exc:
+                print(f"Gemini identification unavailable: {exc}")
+
+        # Step 4: Combine Gemini, OCR, and object detection.
+        # Gemini takes priority when it provides a non-empty value.
+        for field in ("item_name", "category", "brand", "model"):
+            value = gemini_result.get(field)
+
+            if isinstance(value, str) and value.strip():
+                parsed[field] = value.strip()
+
+        # Preserve a useful object name if Gemini/OCR cannot identify it.
         if not parsed.get("item_name"):
             parsed["item_name"] = box["class_name"]
+
+        description = gemini_result.get("description", "")
+
+        if isinstance(description, str) and description.strip():
+            existing_notes = parsed.get("notes") or ""
+            parsed["notes"] = (
+                f"{existing_notes}\n{description.strip()}".strip()
+            )
 
         items.append(
             {

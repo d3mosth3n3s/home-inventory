@@ -31,10 +31,13 @@ export default function App() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState("");
 
-  const [name, setName] = useState("");
-  const [purchasePrice, setPurchasePrice] = useState("");
-  const [serialNumber, setSerialNumber] = useState("");
-  const [condition, setCondition] = useState("good");
+const [name, setName] = useState("");
+const [brand, setBrand] = useState("");
+const [model, setModel] = useState("");
+const [description, setDescription] = useState("");
+const [purchasePrice, setPurchasePrice] = useState("");
+const [serialNumber, setSerialNumber] = useState("");
+const [condition, setCondition] = useState("good");
 
   const [categories, setCategories] = useState([
     "Electronics",
@@ -92,6 +95,9 @@ export default function App() {
         detectedItem.box?.class_name ||
         "Detected item";
       setName(detectedName);
+      setBrand(detectedItem.brand || "");
+      setModel(detectedItem.model || "");
+      setDescription(detectedItem.notes || "");
       setSerialNumber(detectedItem.serial_number || "");
 
       if (detectedItem.category) {
@@ -164,6 +170,9 @@ export default function App() {
     const res = await createItem({
       name,
       category,
+      brand,
+      model,
+      notes: description,
       purchase_price: purchasePrice ? parseFloat(purchasePrice) : null,
       serial_number: serialNumber,
       condition,
@@ -178,6 +187,9 @@ export default function App() {
     }
 
     setName("");
+    setBrand("");
+    setModel("");
+    setDescription("");
     setPurchasePrice("");
     setSerialNumber("");
     setCondition("good");
@@ -216,6 +228,41 @@ export default function App() {
     placeholderTextColor="#999"
     value={name}
     onChangeText={setName}
+  />
+</View>
+
+<View style={styles.labeledInput}>
+  <Text style={styles.inputLabel}>Brand:</Text>
+  <TextInput
+    style={styles.inlineTextInput}
+    placeholder="Enter brand"
+    placeholderTextColor="#999"
+    value={brand}
+    onChangeText={setBrand}
+  />
+</View>
+
+<View style={styles.labeledInput}>
+  <Text style={styles.inputLabel}>Model:</Text>
+  <TextInput
+    style={styles.inlineTextInput}
+    placeholder="Enter model"
+    placeholderTextColor="#999"
+    value={model}
+    onChangeText={setModel}
+  />
+</View>
+
+<View style={styles.descriptionContainer}>
+  <Text style={styles.inputLabel}>Description:</Text>
+  <TextInput
+    style={styles.descriptionInput}
+    placeholder="Enter item description"
+    placeholderTextColor="#999"
+    value={description}
+    onChangeText={setDescription}
+    multiline
+    textAlignVertical="top"
   />
 </View>
 
@@ -410,6 +457,19 @@ inputLabel: {
 inlineTextInput: {
   flex: 1,
   fontSize: 16,
+  paddingVertical: 8,
+},
+descriptionContainer: {
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 4,
+  marginBottom: 10,
+  padding: 8,
+},
+
+descriptionInput: {
+  fontSize: 16,
+  minHeight: 80,
   paddingVertical: 8,
 },
 });
