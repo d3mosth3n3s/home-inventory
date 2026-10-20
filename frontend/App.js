@@ -8,6 +8,7 @@ import {
   Button,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import ImagePickerField from "./components/ImagePickerField";
@@ -30,6 +31,8 @@ export default function App() {
   const [formKey, setFormKey] = useState(0);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState("");
+  const [detectedItems, setDetectedItems] = useState([]);
+  const [selectedItemIndex, setSelectedItemIndex] = useState(0);
 
 const [name, setName] = useState("");
 const [brand, setBrand] = useState("");
@@ -82,7 +85,12 @@ const [condition, setCondition] = useState("good");
 
     try {
       const response = await analyzeImage(uri);
-      const detectedItem = response.data?.items?.[0];
+      const allDetectedItems = response.data?.items || [];
+
+      setDetectedItems(allDetectedItems);
+      setSelectedItemIndex(0);
+
+      const detectedItem = allDetectedItems[0];
 
       if (!detectedItem) {
         setAnalysisError("No item was detected. Please enter the details manually.");
@@ -121,6 +129,127 @@ const [condition, setCondition] = useState("good");
       setAnalyzing(false);
     }
   };
+
+  const handleSelectDetectedItem = (index) => {
+  if (index === selectedItemIndex) return;
+
+  const updatedItems = [...detectedItems];
+
+  // Save edits made to the currently selected item.
+  if (updatedItems[selectedItemIndex]) {
+    updatedItems[selectedItemIndex] = {
+      ...updatedItems[selectedItemIndex],
+      item_name: name,
+      brand,
+      model,
+      notes: description,
+      serial_number: serialNumber,
+      category,
+      purchase_price: purchasePrice,
+      condition,
+      room_location: roomLocation,
+    };
+  }
+
+  const item = updatedItems[index];
+  if (!item) return;
+
+  setDetectedItems(updatedItems);
+  setSelectedItemIndex(index);
+
+  // Load the next item's information.
+  setName(item.item_name || item.box?.class_name || "Detected item");
+  setBrand(item.brand || "");
+  setModel(item.model || "");
+  setDescription(item.notes || "");
+  setSerialNumber(item.serial_number || "");
+  setPurchasePrice(
+    item.purchase_price != null ? String(item.purchase_price) : ""
+  );
+  setCondition(item.condition || "good");
+  setRoomLocation(item.room_location || "Living Room");
+
+  const selectedCategory = item.category
+    ? item.category.charAt(0).toUpperCase() + item.category.slice(1)
+    : "Electronics";
+
+  setCategories((previous) =>
+    previous.includes(selectedCategory)
+      ? previous
+      : [...previous, selectedCategory]
+  );
+
+  setCategory(selectedCategory);
+};
+
+  const handleRemoveDetectedItem = (index) => {
+      const updatedItems = [...detectedItems];
+
+  if (updatedItems[selectedItemIndex] && index !== selectedItemIndex) {
+    updatedItems[selectedItemIndex] = {
+      ...updatedItems[selectedItemIndex],
+      item_name: name,
+      brand,
+      model,
+      notes: description,
+      serial_number: serialNumber,
+      category,
+      purchase_price: purchasePrice,
+      condition,
+      room_location: roomLocation,
+    };
+  }
+  const remainingItems = updatedItems.filter(
+    (_, itemIndex) => itemIndex !== index
+  );
+
+  setDetectedItems(remainingItems);
+
+  if (remainingItems.length === 0) {
+    setSelectedItemIndex(0);
+    setName("");
+    setBrand("");
+    setModel("");
+    setDescription("");
+    setSerialNumber("");
+    setPurchasePrice("");
+    setCondition("good");
+    setCategory("Electronics");
+    setRoomLocation("Living Room");
+    return;
+  }
+
+  // Reload a remaining item if the selected one was removed.
+  if (index === selectedItemIndex) {
+    const nextIndex = Math.min(index, remainingItems.length - 1);
+    const item = remainingItems[nextIndex];
+
+    setSelectedItemIndex(nextIndex);
+    setName(item.item_name || item.box?.class_name || "Detected item");
+    setBrand(item.brand || "");
+    setModel(item.model || "");
+    setDescription(item.notes || "");
+    setSerialNumber(item.serial_number || "");
+    setPurchasePrice(
+      item.purchase_price != null ? String(item.purchase_price) : ""
+    );
+    setCondition(item.condition || "good");
+    setRoomLocation(item.room_location || "Living Room");
+
+    const nextCategory = item.category
+      ? item.category.charAt(0).toUpperCase() + item.category.slice(1)
+      : "Electronics";
+
+    setCategories((previous) =>
+      previous.includes(nextCategory)
+        ? previous
+        : [...previous, nextCategory]
+    );
+    setCategory(nextCategory);
+  } else if (index < selectedItemIndex) {
+    setSelectedItemIndex(selectedItemIndex - 1);
+  }
+};
 
   const handlePriceChange = (text) => {
     const filtered = text.replace(/[^0-9.]/g, "");
@@ -219,6 +348,41 @@ const [condition, setCondition] = useState("good");
         />
         {analyzing && <Text style={styles.statusText}>Analyzing image...</Text>}
         {!!analysisError && <Text style={styles.errorText}>{analysisError}</Text>}
+        {detectedItems.length > 0 && (
+  <View style={styles.scanReview}>
+    <Text style={styles.itemName}>
+      Scan Results ({detectedItems.length} items detected)
+    </Text>
+
+    {detectedItems.map((item, index) => (
+      <View key={index} style={styles.scanReviewItem}>
+        <TouchableOpacity
+          style={[
+            { flex: 1, paddingVertical: 6 },
+            selectedItemIndex === index && styles.selectedScanItem,
+          ]}
+          onPress={() => handleSelectDetectedItem(index)}
+        >
+          <Text>
+            {index + 1}.{" "}
+            {index === selectedItemIndex
+              ? name || "Unnamed item"
+              : item.item_name ||
+                item.box?.class_name ||
+                "Unknown item"}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => handleRemoveDetectedItem(index)}
+          style={{ padding: 8 }}
+        >
+          <Text style={{ color: "#b00020" }}>Remove</Text>
+        </TouchableOpacity>
+      </View>
+    ))}
+  </View>
+)}
 
 <View style={styles.labeledInput}>
   <Text style={styles.inputLabel}>Object Detected:</Text>
@@ -472,4 +636,28 @@ descriptionInput: {
   minHeight: 80,
   paddingVertical: 8,
 },
+
+scanReview: {
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 6,
+  padding: 12,
+  marginBottom: 12,
+  backgroundColor: "#f9f9f9",
+},
+
+scanReviewItem: {
+  flexDirection: "row",
+  alignItems: "center",
+  borderBottomWidth: 1,
+  borderBottomColor: "#eee",
+  paddingVertical: 4,
+},
+
+selectedScanItem: {
+  backgroundColor: "#e3f2fd",
+  borderRadius: 4,
+  paddingHorizontal: 8,
+},
+
 });
