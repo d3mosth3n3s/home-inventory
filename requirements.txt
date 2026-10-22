@@ -8,3 +8,5 @@ Pillow
 streamlit_drawable_canvas
 ultralytics
 easyocr
+google-cloud-vision
+google-genai
