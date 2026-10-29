@@ -1,14 +1,13 @@
-// frontend/components/Sidebar.js
 import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
-// import { supabase } from "../lib/supabase"; // uncomment once auth is wired in
+import { Ionicons } from "@expo/vector-icons";
 
 // One place to edit your nav links. `route` must match a Drawer.Screen name.
 const NAV_ITEMS = [
-  { label: "Dashboard", route: "Dashboard" },
-  { label: "Inventory", route: "Inventory" },
-  { label: "Add Item", route: "AddItem" },
+  { label: "Dashboard", route: "Dashboard", icon: "home" },
+  { label: "Inventory", route: "Inventory", icon: "cube" },
+  { label: "Add Item", route: "AddItem", icon: "create" },
   // { label: "Export", route: "Export" },
   // { label: "Account", route: "Account" },
 ];
@@ -35,7 +34,7 @@ export default function Sidebar({ state, navigation, ...rest }) {
       {/* ---------- TOP: brand ---------- */}
       <View style={styles.brand}>
         <View style={styles.logoPlaceholder} />
-        <Text style={styles.title}>Home Inventory</Text>
+        <Text style={styles.title}>ReCovered</Text>
       </View>
 
       {/* ---------- MIDDLE: nav links ---------- */}
@@ -48,8 +47,11 @@ export default function Sidebar({ state, navigation, ...rest }) {
               onPress={() => go(item.route)}
               style={[styles.navItem, active && styles.navItemActive]}
             >
-              {/* icon slot */}
-              <View style={styles.iconPlaceholder} />
+              <Ionicons
+                name={item.icon}
+                size={24}
+                color={active ? "#000" : "#777"}
+              />
               <Text style={[styles.navLabel, active && styles.navLabelActive]}>
                 {item.label}
               </Text>

@@ -45,13 +45,18 @@ export default function DashboardScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  page: { padding: 16, maxWidth: 1200, width: "100%", alignSelf: "center" },
+  page: {
+    padding: 16,
+    maxWidth: 1200,
+    width: "100%",
+    alignSelf: "center",
+  },
   title: { fontSize: 24, fontWeight: "bold", marginBottom: 12 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
   card: {
     flexGrow: 1,
     flexBasis: 240,
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "#dfdede",
     borderRadius: 8,
     padding: 16,
   },
