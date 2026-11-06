@@ -1,6 +1,11 @@
 import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  DefaultTheme,
+  DarkTheme,
+} from "@react-navigation/native";
 import { ItemsProvider } from "./context/ItemsContext";
+import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import AppNavigator from "./navigation/AppNavigator";
 
 const linking = {
@@ -14,12 +19,35 @@ const linking = {
   },
 };
 
+function Root() {
+  const { isDark, colors } = useTheme();
+  const base = isDark ? DarkTheme : DefaultTheme;
+
+  const navTheme = {
+    ...base,
+    colors: {
+      ...base.colors,
+      background: colors.background,
+      card: colors.surface, // header bar
+      text: colors.text,
+      border: colors.border,
+      primary: colors.accent,
+    },
+  };
+
+  return (
+    <NavigationContainer linking={linking} theme={navTheme}>
+      <AppNavigator />
+    </NavigationContainer>
+  );
+}
+
 export default function App() {
   return (
-    <ItemsProvider>
-      <NavigationContainer linking={linking}>
-        <AppNavigator />
-      </NavigationContainer>
-    </ItemsProvider>
+    <ThemeProvider>
+      <ItemsProvider>
+        <Root />
+      </ItemsProvider>
+    </ThemeProvider>
   );
 }

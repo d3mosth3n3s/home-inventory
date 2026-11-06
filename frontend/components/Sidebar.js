@@ -1,19 +1,20 @@
-import React from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import React, { useMemo } from "react";
+import { View, Text, Pressable, Switch, StyleSheet } from "react-native";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../context/ThemeContext";
 
-// One place to edit your nav links. `route` must match a Drawer.Screen name.
 const NAV_ITEMS = [
   { label: "Dashboard", route: "Dashboard", icon: "home" },
   { label: "Inventory", route: "Inventory", icon: "cube" },
+  { label: "Rooms", route: "Rooms", icon: "grid" },
   { label: "Add Item", route: "AddItem", icon: "create" },
-  // { label: "Export", route: "Export" },
-  // { label: "Account", route: "Account" },
 ];
 
 export default function Sidebar({ state, navigation, ...rest }) {
   const activeRoute = state.routes[state.index].name;
+  const { isDark, toggle, colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const go = (route) => {
     navigation.navigate(route);
@@ -50,7 +51,7 @@ export default function Sidebar({ state, navigation, ...rest }) {
               <Ionicons
                 name={item.icon}
                 size={24}
-                color={active ? "#000" : "#777"}
+                color={active ? colors.accent : colors.mutedText}
               />
               <Text style={[styles.navLabel, active && styles.navLabelActive]}>
                 {item.label}
@@ -63,11 +64,23 @@ export default function Sidebar({ state, navigation, ...rest }) {
       {/* spacer pushes the footer to the bottom */}
       <View style={{ flex: 1 }} />
 
+      {/* ---------- theme toggle ---------- */}
+      <View style={styles.themeRow}>
+        <Text style={styles.themeEmoji}>☀️</Text>
+        <Switch
+          value={isDark}
+          onValueChange={toggle}
+          trackColor={{ false: colors.border, true: colors.accent }}
+          thumbColor="#fff"
+        />
+        <Text style={styles.themeEmoji}>🌙</Text>
+      </View>
+
       {/* ---------- BOTTOM: user / sign out ---------- */}
       <View style={styles.footer}>
-        {/* <Text>{session?.user?.email}</Text> */}
+        {/* <Text style={styles.email}>{session?.user?.email}</Text> */}
         <Pressable onPress={handleSignOut} style={styles.navItem}>
-          <View style={styles.iconPlaceholder} />
+          <Ionicons name="log-out-outline" size={24} color={colors.mutedText} />
           <Text style={styles.navLabel}>Sign out</Text>
         </Pressable>
       </View>
@@ -75,46 +88,51 @@ export default function Sidebar({ state, navigation, ...rest }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flexGrow: 1 },
+const makeStyles = (c) =>
+  StyleSheet.create({
+    container: { flexGrow: 1 },
 
-  brand: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 20,
-    gap: 12,
-  },
-  logoPlaceholder: {
-    width: 32,
-    height: 32,
-    borderRadius: 6,
-    backgroundColor: "#ddd",
-  },
-  title: { fontSize: 18, fontWeight: "bold" },
+    brand: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 20,
+      gap: 12,
+    },
+    logoPlaceholder: {
+      width: 32,
+      height: 32,
+      borderRadius: 6,
+      backgroundColor: c.border,
+    },
+    title: { fontSize: 22, fontWeight: "bold", color: c.text },
 
-  nav: { paddingHorizontal: 12, gap: 4 },
-  navItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  },
-  navItemActive: { backgroundColor: "#eee" },
-  iconPlaceholder: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    backgroundColor: "#ddd",
-  },
-  navLabel: { fontSize: 16 },
-  navLabelActive: { fontWeight: "600" },
+    nav: { paddingHorizontal: 12, gap: 4 },
+    navItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      borderRadius: 8,
+    },
+    // accent color at ~13% opacity: works in both palettes (needs 6-digit hex)
+    navItemActive: { backgroundColor: c.accent + "22" },
+    navLabel: { fontSize: 16, color: c.mutedText },
+    navLabelActive: { fontWeight: "600", color: c.text },
 
-  footer: {
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-  },
-});
+    themeRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    themeEmoji: { color: c.text },
+
+    footer: {
+      paddingHorizontal: 12,
+      paddingVertical: 12,
+      borderTopWidth: 1,
+      borderTopColor: c.border,
+    },
+  });

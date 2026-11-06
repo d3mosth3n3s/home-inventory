@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   View,
   Text,
@@ -13,10 +13,13 @@ import LabeledInput from "../components/LabeledInput";
 import OptionPicker from "../components/OptionPicker";
 import ScanResults from "../components/ScanResults";
 import useItemForm, { CONDITIONS } from "../hooks/useItemForm";
+import { useTheme } from "../context/ThemeContext";
 
 export default function AddItemScreen() {
   const f = useItemForm();
   const { form, set } = f;
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -63,7 +66,7 @@ export default function AddItemScreen() {
           <TextInput
             style={styles.descriptionInput}
             placeholder="Enter item description"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.placeholder}
             value={form.description}
             onChangeText={set("description")}
             multiline
@@ -96,9 +99,11 @@ export default function AddItemScreen() {
           <Picker
             selectedValue={form.condition}
             onValueChange={set("condition")}
+            style={styles.picker}
+            dropdownIconColor={colors.text}
           >
             {CONDITIONS.map((c) => (
-              <Picker.Item key={c} label={c} value={c} />
+              <Picker.Item key={c} label={c} value={c} color={colors.text} />
             ))}
           </Picker>
         </View>
@@ -109,42 +114,50 @@ export default function AddItemScreen() {
           addLabel="+ Add new room..."
           newPlaceholder="New room name"
         />
+
         {!!f.submitError && (
           <Text style={styles.errorText}>{f.submitError}</Text>
         )}
-        <Button
-          title="Add Asset"
-          onPress={() => {
-            console.log("1. button pressed");
-            f.submit();
-          }}
-        />
+        <Button title="Add Asset" onPress={f.submit} color={colors.accent} />
       </View>
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  scrollContent: { alignItems: "center" },
-  container: { width: "100%", maxWidth: 600, padding: 20 },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 12 },
-  statusText: { color: "#555", marginBottom: 8 },
-  errorText: { color: "#b00020", marginBottom: 8 },
-  inputLabel: { fontSize: 16, marginRight: 5 },
-  descriptionContainer: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 4,
-    marginBottom: 10,
-    padding: 8,
-  },
-  descriptionInput: { fontSize: 16, minHeight: 80, paddingVertical: 8 },
-  pickerWrapper: {
-    borderWidth: 1,
-    borderColor: "#bababa",
-    borderRadius: 4,
-    marginBottom: 10,
-    overflow: "hidden",
-    backgroundColor: "#fff",
-  },
-});
+const makeStyles = (c) =>
+  StyleSheet.create({
+    scrollContent: { alignItems: "center" },
+    container: { width: "100%", maxWidth: 600, padding: 20 },
+    title: {
+      fontSize: 24,
+      fontWeight: "bold",
+      marginBottom: 12,
+      color: c.text,
+    },
+    statusText: { color: c.mutedText, marginBottom: 8 },
+    errorText: { color: c.danger, marginBottom: 8 },
+    inputLabel: { fontSize: 16, marginRight: 5, color: c.text },
+    descriptionContainer: {
+      borderWidth: 1,
+      borderColor: c.border,
+      backgroundColor: c.inputBg,
+      borderRadius: 4,
+      marginBottom: 10,
+      padding: 8,
+    },
+    descriptionInput: {
+      fontSize: 16,
+      minHeight: 80,
+      paddingVertical: 8,
+      color: c.text,
+    },
+    pickerWrapper: {
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: 4,
+      marginBottom: 10,
+      overflow: "hidden",
+      backgroundColor: c.inputBg,
+    },
+    picker: { color: c.text, backgroundColor: c.inputBg },
+  });

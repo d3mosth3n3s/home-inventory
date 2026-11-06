@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
 import { API_ORIGIN } from "../api";
+import { useTheme } from "../context/ThemeContext";
 
 export default function ItemRow({ item }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={styles.row}>
       {item.photo_url ? (
@@ -27,17 +31,23 @@ export default function ItemRow({ item }) {
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  thumb: { width: 56, height: 56, borderRadius: 6, backgroundColor: "#eee" },
-  thumbPlaceholder: { borderWidth: 1, borderColor: "#ddd" },
-  name: { fontSize: 16, fontWeight: "600" },
-  meta: { fontSize: 12, color: "#888", marginTop: 2 },
-  value: { fontSize: 14, fontWeight: "500", marginTop: 4 },
-});
+const makeStyles = (c) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: c.border,
+    },
+    thumb: {
+      width: 56,
+      height: 56,
+      borderRadius: 6,
+      backgroundColor: c.surface,
+    },
+    thumbPlaceholder: { borderWidth: 1, borderColor: c.border },
+    name: { fontSize: 16, fontWeight: "600", color: c.text },
+    meta: { fontSize: 12, color: c.mutedText, marginTop: 2 },
+    value: { fontSize: 14, fontWeight: "500", marginTop: 4, color: c.text },
+  });
