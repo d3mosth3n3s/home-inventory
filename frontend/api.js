@@ -9,7 +9,15 @@ const LOCAL_ORIGIN =
 const API_ORIGIN = __DEV__ ? LOCAL_ORIGIN : PROD_ORIGIN;
 console.log("API_ORIGIN is:", API_ORIGIN);
 const API_BASE = `${API_ORIGIN}/api`;
-
+export const photoUrlFor = (item) => {
+  const p = item?.photo_url;
+  if (!p) return null;
+  const url = /^(https?:|file:|data:|blob:)/.test(p) ? p : `${API_ORIGIN}${p}`;
+  // Same filename is reused when a photo is replaced, so bust the cache
+  return item.updated_at
+    ? `${url}?v=${encodeURIComponent(item.updated_at)}`
+    : url;
+};
 const client = axios.create({
   baseURL: API_BASE,
 });

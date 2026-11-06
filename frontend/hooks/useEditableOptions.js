@@ -20,6 +20,7 @@ export default function useEditableOptions(initial, onSelect) {
   };
 
   // used when a scan returns a category that isn't in the list yet
+  // maybe force scan to use existing category??
   const ensure = (value) =>
     setOptions((prev) => (prev.includes(value) ? prev : [...prev, value]));
 

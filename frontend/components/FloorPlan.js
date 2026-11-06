@@ -1,8 +1,36 @@
-import React, { useMemo } from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import React, { useMemo, useState } from "react";
+import { View, Text, Image, Pressable, StyleSheet } from "react-native";
 import { ROOMS, OTHER_ROOM, itemValue, formatMoney } from "../constants/rooms";
+import { photoUrlFor } from "../api";
 
 const MAX_TOKENS = 8;
+
+function Token({ item, styles }) {
+  const [failed, setFailed] = useState(false);
+  const uri = photoUrlFor(item);
+
+  if (uri && !failed) {
+    return (
+      <Image
+        source={{ uri }}
+        style={styles.tokenImage}
+        resizeMode="cover"
+        onError={() => setFailed(true)}
+        accessibilityLabel={String(item.name ?? "")}
+      />
+    );
+  }
+
+  return (
+    <View style={styles.token}>
+      <Text style={styles.tokenText}>
+        {String(item.name ?? "?")
+          .charAt(0)
+          .toUpperCase()}
+      </Text>
+    </View>
+  );
+}
 
 /**
  * Top-down house floorplan. Each room shows its item count, total value,
@@ -82,13 +110,7 @@ export default function FloorPlan({ grouped, selected, onSelect, colors }) {
               </Text>
               <View style={styles.tokens}>
                 {items.slice(0, MAX_TOKENS).map((item) => (
-                  <View key={item.id} style={styles.token}>
-                    <Text style={styles.tokenText}>
-                      {String(item.name ?? "?")
-                        .charAt(0)
-                        .toUpperCase()}
-                    </Text>
-                  </View>
+                  <Token key={item.id} item={item} styles={styles} />
                 ))}
                 {items.length > MAX_TOKENS && (
                   <Text style={styles.more}>+{items.length - MAX_TOKENS}</Text>
@@ -140,12 +162,18 @@ const makeStyles = (c) =>
     roomMeta: { color: c.muted, fontSize: 11, marginTop: 1 },
     tokens: { flexDirection: "row", flexWrap: "wrap", marginTop: 4, gap: 3 },
     token: {
-      width: 18,
-      height: 18,
+      width: 36,
+      height: 36,
       borderRadius: 4,
       backgroundColor: c.accent,
       alignItems: "center",
       justifyContent: "center",
+    },
+    tokenImage: {
+      width: 36,
+      height: 36,
+      borderRadius: 4,
+      backgroundColor: c.border,
     },
     tokenText: { color: "#fff", fontSize: 10, fontWeight: "700" },
     more: { color: c.muted, fontSize: 11, alignSelf: "center" },
