@@ -15,6 +15,13 @@ export default function ScanResults({
       <Text style={styles.heading}>
         Scan Results ({detectedItems.length} items detected)
       </Text>
+      <View style={styles.disclaimerBox}>
+        <Text style={styles.disclaimerText}>
+          AI-generated scan results may be inaccurate or incomplete.
+          Please review all detected items, verify their details,
+          and manually add any missing belongings before saving.
+        </Text>
+      </View>
       {detectedItems.map((item, index) => (
         <View key={index} style={styles.row}>
           <TouchableOpacity
@@ -63,4 +70,18 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     paddingHorizontal: 8,
   },
+  disclaimerBox: {
+  backgroundColor: "#FFF3CD",
+  borderColor: "#E6C76E",
+  borderWidth: 1,
+  borderRadius: 6,
+  padding: 12,
+  marginTop: 10,
+  marginBottom: 15,
+},
+disclaimerText: {
+  color: "#664D03",
+  fontSize: 14,
+  lineHeight: 21,
+},
 });
