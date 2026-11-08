@@ -103,7 +103,7 @@ export default function AddItemScreen() {
             dropdownIconColor={colors.text}
           >
             {CONDITIONS.map((c) => (
-              <Picker.Item key={c} label={c} value={c} color={colors.text} />
+              <Picker.Item key={c} label={c.charAt(0).toUpperCase() + c.slice(1)} value={c} color={colors.text} />
             ))}
           </Picker>
         </View>
