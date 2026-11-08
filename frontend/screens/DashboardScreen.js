@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useItems } from "../context/ItemsContext";
 import { useTheme } from "../context/ThemeContext";
 import ItemRow from "../components/ItemRow";
+import LoginDisclaimer from "../components/LoginDisclaimer";
 
 export default function DashboardScreen({ navigation }) {
   const { items, summary } = useItems();
@@ -11,9 +12,11 @@ export default function DashboardScreen({ navigation }) {
   const recent = items.slice(0, 5); // flip with .slice(-5).reverse() if your API returns oldest-first
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
-      <View style={styles.headerRow}>
-        <Text style={styles.title}>Insured Assets</Text>
+  <ScrollView contentContainerStyle={styles.page}>
+    <LoginDisclaimer />
+
+    <View style={styles.headerRow}>
+      <Text style={styles.title}>Insured Assets</Text>
 
         <Pressable
           style={styles.addButton}
