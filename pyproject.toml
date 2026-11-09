@@ -1,2 +1,21 @@
+[project]
+name = "home-inventory"
+version = "1.0.0"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "python-multipart",
+    "streamlit",
+    "pandas",
+    "numpy",
+    "Pillow",
+    "streamlit-drawable-canvas",
+    "ultralytics",
+    "easyocr",
+    "google-cloud-vision",
+    "google-genai",
+    "psycopg2-binary"
+]
+
 [tool.vercel]
 entrypoint = "backend.app:app"
