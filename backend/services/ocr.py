@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 
 import numpy as np
@@ -6,6 +7,8 @@ import numpy as np
 @lru_cache(maxsize=1)
 def load_ocr_reader():
     """Initialize the shared EasyOCR reader once."""
+    if os.getenv("DISABLE_OCR"):
+        return None
     try:
         import easyocr
 
