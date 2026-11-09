@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
-import { API_ORIGIN } from "../api";
+import { photoUrlFor } from "../api";
 import { useTheme } from "../context/ThemeContext";
 
 export default function ItemRow({ item }) {
@@ -10,10 +10,7 @@ export default function ItemRow({ item }) {
   return (
     <View style={styles.row}>
       {item.photo_url ? (
-        <Image
-          source={{ uri: `${API_ORIGIN}${item.photo_url}` }}
-          style={styles.thumb}
-        />
+        <Image source={{ uri: photoUrlFor(item) }} style={styles.thumb} />
       ) : (
         <View style={[styles.thumb, styles.thumbPlaceholder]} />
       )}
