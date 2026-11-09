@@ -3,18 +3,20 @@ name = "home-inventory"
 version = "1.0.0"
 dependencies = [
     "fastapi",
-    "uvicorn[standard]",
     "python-multipart",
-    "streamlit",
-    "pandas",
-    "numpy",
     "Pillow",
-    "streamlit-drawable-canvas",
-    "ultralytics",
-    "easyocr",
     "google-cloud-vision",
     "google-genai",
-    "psycopg2-binary"
+    "psycopg2-binary",
+]
+
+[project.optional-dependencies]
+local = [
+    "uvicorn[standard]",
+    "streamlit",
+    "streamlit-drawable-canvas",
+    "pandas",
+    "numpy",
 ]
 
 [tool.vercel]
