@@ -200,16 +200,46 @@ def delete_item(item_id: int) -> None:
             conn.commit()
 
 
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "item-photos")
+CONTENT_TYPES = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp"}
+
+
+def save_photo(filename: str, data: bytes, suffix: str) -> str:
+    """Store a photo and return the URL to save in photo_url."""
+    if SUPABASE_URL and SUPABASE_SERVICE_KEY:
+        import requests
+
+        response = requests.post(
+            f"{SUPABASE_URL}/storage/v1/object/{SUPABASE_BUCKET}/{filename}",
+            data=data,
+            headers={
+                "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+                "apikey": SUPABASE_SERVICE_KEY,
+                "Content-Type": CONTENT_TYPES[suffix],
+                "x-upsert": "true",
+            },
+            timeout=30,
+        )
+        if not response.ok:
+            raise HTTPException(status_code=502, detail=f"Photo upload failed: {response.text}")
+        return f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET}/{filename}"
+
+    # Local development: keep saving to disk
+    (UPLOAD_DIR / filename).write_bytes(data)
+    return f"/uploads/{filename}"
+
+
 @app.post("/api/items/{item_id}/photo")
 async def upload_photo(item_id: int, photo: UploadFile = File(...)) -> dict:
     get_item_or_404(item_id)
     suffix = Path(photo.filename or "photo.jpg").suffix.lower() or ".jpg"
-    if suffix not in {".jpg", ".jpeg", ".png", ".webp"}:
+    if suffix not in CONTENT_TYPES:
         raise HTTPException(status_code=400, detail="Unsupported image type")
 
-    destination = UPLOAD_DIR / f"item-{item_id}{suffix}"
-    destination.write_bytes(await photo.read())
-    photo_url = f"/uploads/{destination.name}"
+    photo_url = save_photo(f"item-{item_id}{suffix}", await photo.read(), suffix)
+
     with closing(connection()) as conn:
         with conn.cursor() as cursor:
             cursor.execute(
@@ -224,7 +254,6 @@ async def upload_photo(item_id: int, photo: UploadFile = File(...)) -> dict:
             conn.commit()
 
     return get_item_or_404(item_id)
-
 
 @app.get("/uploads/{filename}")
 def serve_upload(filename: str):
