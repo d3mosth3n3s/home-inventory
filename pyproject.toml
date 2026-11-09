@@ -3,7 +3,11 @@ name = "home-inventory"
 version = "1.0.0"
 dependencies = [
     "fastapi",
+    "uvicorn[standard]",
+    "python-dotenv",
     "python-multipart",
+    "pandas",
+    "numpy",
     "Pillow",
     "google-cloud-vision",
     "google-genai",
@@ -11,13 +15,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-local = [
-    "uvicorn[standard]",
-    "streamlit",
-    "streamlit-drawable-canvas",
-    "pandas",
-    "numpy",
-]
+local = ["streamlit", "streamlit-drawable-canvas"]
 
 [tool.vercel]
 entrypoint = "backend.app:app"
+
+
