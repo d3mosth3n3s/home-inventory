@@ -10,3 +10,4 @@ ultralytics
 easyocr
 google-cloud-vision
 google-genai
+psycopg2-binary
