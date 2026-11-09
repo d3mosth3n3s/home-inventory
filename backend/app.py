@@ -18,7 +18,10 @@ from backend.services.analysis import analyze_image
 
 load_dotenv()
 
-DATA_DIR = APP_DIR / "data"
+if os.getenv("VERCEL"):
+    DATA_DIR = Path("/tmp/data")
+else:
+    DATA_DIR = APP_DIR / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 UPLOAD_DIR = Path(os.getenv("INVENTORY_UPLOAD_DIR", str(DATA_DIR / "uploads")))
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
