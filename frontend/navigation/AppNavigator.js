@@ -6,6 +6,7 @@ import InventoryScreen from "../screens/InventoryScreen";
 import RoomsScreen from "../screens/RoomsScreen";
 import { useTheme } from "../context/ThemeContext";
 import AddItemScreen from "../screens/AddItemScreen";
+import EditItemScreen from "../screens/EditItemScreen";
 
 const Drawer = createDrawerNavigator();
 
@@ -15,6 +16,7 @@ export default function AppNavigator() {
 
   return (
     <Drawer.Navigator
+      backBehavior="history"
       drawerContent={(props) => <Sidebar {...props} />}
       screenOptions={{
         drawerType: isWide ? "permanent" : "front",
@@ -32,6 +34,11 @@ export default function AppNavigator() {
         name="AddItem"
         component={AddItemScreen}
         options={{ title: "Add Item" }}
+      />
+      <Drawer.Screen
+        name="EditItem"
+        component={EditItemScreen}
+        options={{ title: "Edit Item" }}
       />
     </Drawer.Navigator>
   );

@@ -1,14 +1,22 @@
 import React, { useMemo } from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Text, Image, Pressable, StyleSheet } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { photoUrlFor } from "../api";
 import { useTheme } from "../context/ThemeContext";
 
 export default function ItemRow({ item }) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const navigation = useNavigation();
 
   return (
-    <View style={styles.row}>
+    <Pressable
+      style={({ hovered, pressed }) => [
+        styles.row,
+        (hovered || pressed) && styles.rowActive,
+      ]}
+      onPress={() => navigation.navigate("EditItem", { id: item.id })}
+    >
       {item.photo_url ? (
         <Image source={{ uri: photoUrlFor(item) }} style={styles.thumb} />
       ) : (
@@ -24,7 +32,7 @@ export default function ItemRow({ item }) {
           ${(item.current_value ?? item.purchase_price ?? 0).toLocaleString()}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -37,6 +45,7 @@ const makeStyles = (c) =>
       borderBottomWidth: 1,
       borderBottomColor: c.border,
     },
+    rowActive: { backgroundColor: c.surface },
     thumb: {
       width: 56,
       height: 56,
