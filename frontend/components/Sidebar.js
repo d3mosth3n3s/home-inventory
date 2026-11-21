@@ -3,6 +3,7 @@ import { View, Text, Pressable, Switch, StyleSheet } from "react-native";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
 
 const NAV_ITEMS = [
   { label: "Dashboard", route: "Dashboard", icon: "home" },
@@ -15,14 +16,18 @@ export default function Sidebar({ state, navigation, ...rest }) {
   const activeRoute = state.routes[state.index].name;
   const { isDark, toggle, colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-
+  const { user, signOut } = useAuth();
   const go = (route) => {
     navigation.navigate(route);
     navigation.closeDrawer(); // closes the mobile drawer; harmless when permanent
   };
 
-  const handleSignOut = () => {
-    // supabase.auth.signOut();
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+
+    if (error) {
+      console.error("Sign out failed:", error.message);
+    }
   };
 
   return (
@@ -66,19 +71,29 @@ export default function Sidebar({ state, navigation, ...rest }) {
 
       {/* ---------- theme toggle ---------- */}
       <View style={styles.themeRow}>
-        <Text style={styles.themeEmoji}>☀️</Text>
+        <Ionicons
+          name={isDark ? "sunny-outline" : "sunny"}
+          size={22}
+          color={isDark ? colors.mutedText : colors.accent}
+        />
+
         <Switch
           value={isDark}
           onValueChange={toggle}
           trackColor={{ false: colors.border, true: colors.accent }}
           thumbColor="#fff"
         />
-        <Text style={styles.themeEmoji}>🌙</Text>
+
+        <Ionicons
+          name={isDark ? "moon" : "moon-outline"}
+          size={22}
+          color={isDark ? colors.accent : colors.mutedText}
+        />
       </View>
 
       {/* ---------- BOTTOM: user / sign out ---------- */}
       <View style={styles.footer}>
-        {/* <Text style={styles.email}>{session?.user?.email}</Text> */}
+        <Text style={styles.email}>{user?.email}</Text>
         <Pressable onPress={handleSignOut} style={styles.navItem}>
           <Ionicons name="log-out-outline" size={24} color={colors.mutedText} />
           <Text style={styles.navLabel}>Sign out</Text>
@@ -105,7 +120,12 @@ const makeStyles = (c) =>
       backgroundColor: c.border,
     },
     title: { fontSize: 22, fontWeight: "bold", color: c.text },
-
+    email: {
+      fontSize: 13,
+      color: c.mutedText,
+      paddingHorizontal: 12,
+      marginBottom: 8,
+    },
     nav: { paddingHorizontal: 12, gap: 4 },
     navItem: {
       flexDirection: "row",
