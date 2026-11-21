@@ -9,10 +9,10 @@ import {
 } from "react-native";
 import { useAuth } from "../context/AuthContext";
 
-export default function LoginScreen() {
+export default function LoginScreen({ onBack, initialRegistering = false }) {
   const { signIn, signUp } = useAuth();
 
-  const [registering, setRegistering] = useState(false);
+  const [registering, setRegistering] = useState(initialRegistering);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -46,6 +46,9 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
+      <Pressable onPress={onBack}>
+        <Text style={styles.link}>Back to homepage</Text>
+      </Pressable>
       <Text style={styles.title}>ReCovered</Text>
       <Text style={styles.subtitle}>
         {registering ? "Create an account" : "Welcome back"}

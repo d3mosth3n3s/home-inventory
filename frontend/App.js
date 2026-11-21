@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
 import {
   NavigationContainer,
@@ -12,6 +12,7 @@ import { ThemeProvider, useTheme } from "./context/ThemeContext";
 
 import AppNavigator from "./navigation/AppNavigator";
 import LoginScreen from "./screens/LoginScreen";
+import HomeScreen from "./screens/HomeScreen";
 
 const linking = {
   prefixes: [],
@@ -28,8 +29,13 @@ function Root() {
   const { isDark, colors } = useTheme();
   const { session, loading } = useAuth();
 
+  const [authPage, setAuthPage] = useState("home");
+  useEffect(() => {
+    if (session) {
+      setAuthPage("home");
+    }
+  }, [session]);
   const base = isDark ? DarkTheme : DefaultTheme;
-
   const navTheme = {
     ...base,
     colors: {
@@ -57,7 +63,22 @@ function Root() {
   }
 
   if (!session) {
-    return <LoginScreen />;
+    if (authPage === "home") {
+      return (
+        <HomeScreen
+          onLogin={() => setAuthPage("login")}
+          onRegister={() => setAuthPage("register")}
+        />
+      );
+    }
+
+    return (
+      <LoginScreen
+        key={authPage}
+        initialRegistering={authPage === "register"}
+        onBack={() => setAuthPage("home")}
+      />
+    );
   }
 
   return (
