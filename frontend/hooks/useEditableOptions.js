@@ -1,11 +1,12 @@
 import { useState, useRef } from "react";
+import { roomKeyFor } from "../constants/rooms";
 import { useOptions, mergeOptions } from "../context/OptionsContext";
 import { useItems } from "../context/ItemsContext";
 
 export const ADD_NEW = "__add_new__";
 
 export default function useEditableOptions(kind, onSelect, initial = []) {
-  const { rooms, categories, addOption } = useOptions();
+  const { rooms, categories, hiddenRoomKeys, addOption } = useOptions();
   const { items } = useItems();
 
   const [adding, setAdding] = useState(false);
@@ -27,6 +28,10 @@ export default function useEditableOptions(kind, onSelect, initial = []) {
     initial,
     existingItemOptions,
     temporaryOptions,
+  ).filter(
+    (name) =>
+      kind !== "room" ||
+      !hiddenRoomKeys.includes(roomKeyFor({ room_location: name })),
   );
 
   const handleChange = (value) => {

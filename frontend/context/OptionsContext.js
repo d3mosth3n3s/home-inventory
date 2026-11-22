@@ -8,6 +8,7 @@ import React, {
 
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./AuthContext";
+import { roomKeyFor } from "../constants/rooms";
 
 const OptionsContext = createContext(null);
 
@@ -37,7 +38,9 @@ export function mergeOptions(...lists) {
   const unique = new Map();
 
   for (const value of lists.flat()) {
-    if (typeof value !== "string" || !value.trim()) continue;
+    if (typeof value !== "string" || !value.trim()) {
+      continue;
+    }
 
     const name = value.trim();
     const key = name.toLowerCase();
@@ -57,26 +60,64 @@ export function OptionsProvider({ children }) {
   const [error, setError] = useState("");
 
   const loadOptions = useCallback(async () => {
-    if (!user) return;
+    if (!user?.id) return [];
 
     const { data, error } = await supabase
       .from("user_options")
-      .select("kind, name")
+      .select("kind, name, active")
       .eq("user_id", user.id)
       .order("created_at");
 
     if (error) {
       setError(error.message);
-      return;
+      throw error;
     }
 
     setOptions(data || []);
     setError("");
+
+    return data || [];
   }, [user?.id]);
 
   useEffect(() => {
-    loadOptions();
+    loadOptions().catch(console.error);
   }, [loadOptions]);
+
+  const hiddenRoomKeys = options
+    .filter((o) => o.kind === "room" && !o.active)
+    .map((o) => roomKeyFor({ room_location: o.name }));
+
+  const rooms = mergeOptions(
+    DEFAULT_ROOMS,
+    options.filter((o) => o.kind === "room" && o.active).map((o) => o.name),
+  ).filter(
+    (name) => !hiddenRoomKeys.includes(roomKeyFor({ room_location: name })),
+  );
+
+  const categories = mergeOptions(
+    DEFAULT_CATEGORIES,
+    options.filter((o) => o.kind === "category" && o.active).map((o) => o.name),
+  );
+
+  const manageRoom = async (
+    action,
+    oldName = null,
+    newName = null,
+    layout = null,
+  ) => {
+    const { data, error } = await supabase.rpc("manage_inventory_room", {
+      p_action: action,
+      p_old_name: oldName,
+      p_new_name: newName,
+      p_layout: layout,
+    });
+
+    if (error) throw error;
+
+    await loadOptions();
+
+    return data;
+  };
 
   const addOption = async (kind, name) => {
     const trimmed = name.trim();
@@ -93,20 +134,24 @@ export function OptionsProvider({ children }) {
       throw new Error("Enter a name between 1 and 50 characters.");
     }
 
-    const defaults = kind === "room" ? DEFAULT_ROOMS : DEFAULT_CATEGORIES;
-
-    const existing = mergeOptions(
-      defaults,
-      options.filter((o) => o.kind === kind).map((o) => o.name),
-    ).find((o) => o.toLowerCase() === trimmed.toLowerCase());
+    const existing = (kind === "room" ? rooms : categories).find(
+      (o) => o.toLowerCase() === trimmed.toLowerCase(),
+    );
 
     if (existing) return existing;
+
+    if (kind === "room") {
+      const result = await manageRoom("add", null, trimmed);
+
+      return result.name;
+    }
 
     const { error } = await supabase.from("user_options").upsert(
       {
         user_id: user.id,
         kind,
         name: trimmed,
+        active: true,
       },
       {
         onConflict: "user_id,kind,name_key",
@@ -116,41 +161,30 @@ export function OptionsProvider({ children }) {
 
     if (error) throw error;
 
-    // Refresh from Supabase so stored capitalization is preserved.
-    const { data, error: readError } = await supabase
-      .from("user_options")
-      .select("kind, name")
-      .eq("user_id", user.id)
-      .order("created_at");
-
-    if (readError) throw readError;
-
-    setOptions(data || []);
+    const data = await loadOptions();
 
     return (
-      data?.find(
+      data.find(
         (o) =>
           o.kind === kind && o.name.toLowerCase() === trimmed.toLowerCase(),
       )?.name || trimmed
     );
   };
 
-  const rooms = mergeOptions(
-    DEFAULT_ROOMS,
-    options.filter((o) => o.kind === "room").map((o) => o.name),
-  );
+  const renameRoom = (oldName, newName, layout) =>
+    manageRoom("rename", oldName, newName, layout);
 
-  const categories = mergeOptions(
-    DEFAULT_CATEGORIES,
-    options.filter((o) => o.kind === "category").map((o) => o.name),
-  );
+  const deleteRoom = (name, layout) => manageRoom("delete", name, null, layout);
 
   return (
     <OptionsContext.Provider
       value={{
         rooms,
         categories,
+        hiddenRoomKeys,
         addOption,
+        renameRoom,
+        deleteRoom,
         loadOptions,
         error,
       }}

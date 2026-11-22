@@ -4,11 +4,11 @@ import { useAuth } from "../context/AuthContext";
 import { useOptions, mergeOptions } from "../context/OptionsContext";
 import { useItems } from "../context/ItemsContext";
 
-import { buildLayout, canPlace } from "../constants/rooms";
+import { buildLayout, canPlace, roomKeyFor } from "../constants/rooms";
 
 export default function useRoomLayout() {
   const { user } = useAuth();
-  const { rooms } = useOptions();
+  const { rooms, hiddenRoomKeys } = useOptions();
   const { items } = useItems();
 
   const [saved, setSaved] = useState([]);
@@ -22,8 +22,10 @@ export default function useRoomLayout() {
       mergeOptions(
         rooms,
         items.map((item) => item.room_location),
+      ).filter(
+        (name) => !hiddenRoomKeys.includes(roomKeyFor({ room_location: name })),
       ),
-    [rooms, items],
+    [rooms, items, hiddenRoomKeys],
   );
 
   useEffect(() => {
@@ -66,7 +68,10 @@ export default function useRoomLayout() {
     () => buildLayout(names, draft ?? saved),
     [names, draft, saved],
   );
-
+  const replaceLayout = (nextLayout) => {
+    setSaved(nextLayout ?? []);
+    setDraft(null);
+  };
   const updateRoom = (candidate, maxHeight) => {
     setDraft((previous) => {
       const current = buildLayout(names, previous ?? saved);
@@ -125,5 +130,6 @@ export default function useRoomLayout() {
     resetLayout,
     cancelChanges,
     saveLayout,
+    replaceLayout,
   };
 }

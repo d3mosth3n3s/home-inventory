@@ -15,7 +15,7 @@ const EMPTY_FORM = {
   serialNumber: "",
   condition: "good",
   category: "Electronics",
-  roomLocation: "Living Room",
+  roomLocation: "Unassigned",
 };
 
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);

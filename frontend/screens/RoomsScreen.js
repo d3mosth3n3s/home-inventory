@@ -27,9 +27,9 @@ import {
 } from "../constants/rooms";
 
 export default function RoomsScreen() {
-  const { items } = useItems();
+  const { items, loadItems } = useItems();
   const { colors } = useTheme();
-  const { addOption } = useOptions();
+  const { addOption, renameRoom, deleteRoom } = useOptions();
 
   const f = useRoomLayout();
 
@@ -43,6 +43,11 @@ export default function RoomsScreen() {
   const [roomName, setRoomName] = useState("");
   const [roomError, setRoomError] = useState("");
   const [creating, setCreating] = useState(false);
+
+  const [roomAction, setRoomAction] = useState(null);
+  const [newRoomName, setNewRoomName] = useState("");
+  const [managing, setManaging] = useState(false);
+  const [manageError, setManageError] = useState("");
 
   const grouped = useMemo(() => {
     const map = Object.create(null);
@@ -90,6 +95,7 @@ export default function RoomsScreen() {
     setEditHeight(Math.ceil(layoutHeight / 5) * 5 + 30);
 
     setEditing(true);
+    cancelRoomAction();
   };
 
   const cancelEditing = () => {
@@ -146,7 +152,66 @@ export default function RoomsScreen() {
       setCreating(false);
     }
   };
+  const selectedItems = grouped[selected] ?? [];
 
+  const startRename = () => {
+    setNewRoomName(selectedLabel ?? "");
+    setManageError("");
+    setRoomAction("rename");
+  };
+
+  const startDelete = () => {
+    setManageError("");
+    setRoomAction("delete");
+  };
+
+  const cancelRoomAction = () => {
+    setRoomAction(null);
+    setNewRoomName("");
+    setManageError("");
+  };
+
+  const selectRoom = (key) => {
+    if (managing) return;
+
+    cancelRoomAction();
+    setSelected(key);
+  };
+
+  const confirmRoomAction = async () => {
+    if (managing || !selectedLabel || !roomAction) {
+      return;
+    }
+
+    if (roomAction === "rename" && !newRoomName.trim()) {
+      setManageError("Enter a room name.");
+      return;
+    }
+
+    setManaging(true);
+    setManageError("");
+
+    try {
+      let result;
+
+      if (roomAction === "rename") {
+        result = await renameRoom(selectedLabel, newRoomName.trim(), f.layout);
+      } else {
+        result = await deleteRoom(selectedLabel, f.layout);
+      }
+
+      f.replaceLayout(result.layout);
+
+      await loadItems();
+
+      setSelected(null);
+      cancelRoomAction();
+    } catch (error) {
+      setManageError(error.message || "Couldn't update room.");
+    } finally {
+      setManaging(false);
+    }
+  };
   return (
     <SectionList
       contentContainerStyle={styles.page}
@@ -159,7 +224,11 @@ export default function RoomsScreen() {
             <Text style={styles.title}>Rooms</Text>
 
             {!editing && !f.loading && !f.error && (
-              <Pressable onPress={startEditing} style={styles.outlineButton}>
+              <Pressable
+                onPress={startEditing}
+                disabled={managing}
+                style={styles.outlineButton}
+              >
                 <Ionicons name="create-outline" size={18} color={colors.text} />
 
                 <Text style={styles.buttonText}>Edit layout</Text>
@@ -193,7 +262,7 @@ export default function RoomsScreen() {
                 layout={f.layout}
                 grouped={grouped}
                 selected={selected}
-                onSelect={setSelected}
+                onSelect={selectRoom}
                 colors={colors}
                 editing={editing && !f.saving}
                 onUpdate={f.updateRoom}
@@ -304,6 +373,122 @@ export default function RoomsScreen() {
                       </Pressable>
                     )}
                   </View>
+                  {selected && selected !== OTHER_ROOM.key && selectedLabel && (
+                    <View style={styles.managementPanel}>
+                      <View style={styles.titleRow}>
+                        <View>
+                          <Text style={styles.managementTitle}>
+                            {selectedLabel}
+                          </Text>
+
+                          <Text style={styles.hint}>
+                            {selectedItems.length} items
+                          </Text>
+                        </View>
+                      </View>
+
+                      {!roomAction && (
+                        <View style={styles.toolbar}>
+                          <Pressable
+                            onPress={startRename}
+                            style={styles.outlineButton}
+                          >
+                            <Ionicons
+                              name="pencil-outline"
+                              size={18}
+                              color={colors.text}
+                            />
+
+                            <Text style={styles.buttonText}>Rename</Text>
+                          </Pressable>
+
+                          <Pressable
+                            onPress={startDelete}
+                            style={styles.dangerButton}
+                          >
+                            <Ionicons
+                              name="trash-outline"
+                              size={18}
+                              color={colors.danger}
+                            />
+
+                            <Text style={styles.dangerText}>Delete room</Text>
+                          </Pressable>
+                        </View>
+                      )}
+
+                      {roomAction === "rename" && (
+                        <>
+                          <TextInput
+                            style={styles.input}
+                            value={newRoomName}
+                            onChangeText={setNewRoomName}
+                            placeholder="New room name"
+                            placeholderTextColor={colors.placeholder}
+                            maxLength={50}
+                            editable={!managing}
+                          />
+
+                          <View style={styles.toolbar}>
+                            <Pressable
+                              onPress={cancelRoomAction}
+                              disabled={managing}
+                              style={styles.outlineButton}
+                            >
+                              <Text style={styles.buttonText}>Cancel</Text>
+                            </Pressable>
+
+                            <Pressable
+                              onPress={confirmRoomAction}
+                              disabled={managing}
+                              style={styles.primaryButton}
+                            >
+                              <Text style={styles.primaryText}>
+                                {managing ? "Saving..." : "Rename room"}
+                              </Text>
+                            </Pressable>
+                          </View>
+                        </>
+                      )}
+
+                      {roomAction === "delete" && (
+                        <>
+                          <Text style={styles.deleteWarning}>
+                            Delete {selectedLabel}?
+                          </Text>
+
+                          <Text style={styles.hint}>
+                            {selectedItems.length} items will be moved to
+                            Unassigned. No items will be deleted.
+                          </Text>
+
+                          <View style={styles.toolbar}>
+                            <Pressable
+                              onPress={cancelRoomAction}
+                              disabled={managing}
+                              style={styles.outlineButton}
+                            >
+                              <Text style={styles.buttonText}>Cancel</Text>
+                            </Pressable>
+
+                            <Pressable
+                              onPress={confirmRoomAction}
+                              disabled={managing}
+                              style={styles.confirmDeleteButton}
+                            >
+                              <Text style={styles.primaryText}>
+                                {managing ? "Deleting..." : "Delete room"}
+                              </Text>
+                            </Pressable>
+                          </View>
+                        </>
+                      )}
+
+                      {!!manageError && (
+                        <Text style={styles.error}>{manageError}</Text>
+                      )}
+                    </View>
+                  )}
                 </>
               )}
             </>
@@ -338,6 +523,52 @@ export default function RoomsScreen() {
 
 const makeStyles = (c) =>
   StyleSheet.create({
+    managementPanel: {
+      marginTop: 16,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: c.border,
+      backgroundColor: c.surface,
+    },
+
+    managementTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: c.text,
+      marginBottom: 4,
+    },
+
+    dangerButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      borderWidth: 1,
+      borderColor: c.danger,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+
+    dangerText: {
+      color: c.danger,
+      fontSize: 14,
+      fontWeight: "500",
+    },
+
+    deleteWarning: {
+      color: c.danger,
+      fontSize: 16,
+      fontWeight: "600",
+      marginBottom: 8,
+    },
+
+    confirmDeleteButton: {
+      backgroundColor: c.danger,
+      paddingHorizontal: 14,
+      paddingVertical: 11,
+      alignItems: "center",
+      justifyContent: "center",
+    },
     page: {
       padding: 16,
       maxWidth: 900,
