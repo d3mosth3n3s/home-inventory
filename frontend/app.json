@@ -22,7 +22,7 @@
     },
     "plugins": [
       "@react-native-community/datetimepicker",
-            [
+      [
         "expo-image-picker",
         {
           "photosPermission": "The app accesses your photos to let you save them to your inventory.",
@@ -35,8 +35,8 @@
             }
           }
         }
-            ]
+      ],
+      "expo-font"
     ]
   }
-
 }

@@ -10,6 +10,13 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import {
+  useFonts,
+  Urbanist_300Light,
+  Urbanist_400Regular,
+  Urbanist_500Medium,
+  Urbanist_600SemiBold,
+} from "@expo-google-fonts/urbanist";
 
 const C = {
   background: "#141518",
@@ -69,6 +76,16 @@ export default function HomeScreen({ onLogin, onRegister }) {
   const isWide = width >= 900;
   const isSmall = width < 500;
   const padding = isWide ? 64 : 24;
+  const [fontsLoaded, fontError] = useFonts({
+    Urbanist_300Light,
+    Urbanist_400Regular,
+    Urbanist_500Medium,
+    Urbanist_600SemiBold,
+  });
+
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
 
   return (
     <View style={styles.pageBackground}>
@@ -127,20 +144,17 @@ export default function HomeScreen({ onLogin, onRegister }) {
                 style={[
                   styles.headline,
                   {
-                    fontSize: isWide ? 68 : 42,
+                    fontSize: isWide ? 88 : 42,
                     lineHeight: isWide ? 76 : 49,
                   },
                 ]}
               >
-                Everything you own.
-                {"\n"}
-                <Text style={styles.headlineAccent}>
-                  Everything accounted for.
-                </Text>
+                Be
+                <Text style={styles.headlineAccent}> Prepared.</Text>
               </Text>
 
               <Text style={styles.description}>
-                A single place to document your belongings, understand their
+                A centralized hub to document your belongings, understand their
                 value, and prepare for the unexpected.
               </Text>
 
@@ -296,8 +310,8 @@ const styles = StyleSheet.create({
 
   brandName: {
     color: C.text,
-    fontSize: 23,
-    fontWeight: "500",
+    fontSize: 28,
+    fontFamily: "Urbanist_400Regular",
     letterSpacing: -1,
   },
 
@@ -313,7 +327,7 @@ const styles = StyleSheet.create({
 
   loginText: {
     color: C.text,
-    fontWeight: "500",
+    fontFamily: "Urbanist_500Medium",
     fontSize: 14,
   },
 
@@ -324,10 +338,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 6,
   },
-
   outlineText: {
     color: C.accent,
-    fontWeight: "600",
+    fontFamily: "Urbanist_600SemiBold",
     fontSize: 14,
   },
 
@@ -374,19 +387,19 @@ const styles = StyleSheet.create({
   eyebrow: {
     color: C.accent,
     fontSize: 11,
-    fontWeight: "500",
+    fontFamily: "Urbanist_500Medium",
     letterSpacing: 2,
   },
 
   headline: {
     color: C.text,
-    fontWeight: "300",
+    fontFamily: "Urbanist_300Light",
     letterSpacing: -2,
   },
 
   headlineAccent: {
     color: C.accent,
-    fontWeight: "300",
+    fontFamily: "Urbanist_300Light",
   },
 
   description: {
@@ -394,7 +407,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 28,
     maxWidth: 500,
-    fontWeight: "400",
+    fontFamily: "Urbanist_400Regular",
   },
 
   heroActions: {
@@ -418,8 +431,8 @@ const styles = StyleSheet.create({
 
   primaryText: {
     color: C.background,
-    fontSize: 15,
-    fontWeight: "600",
+    fontSize: 20,
+    fontFamily: "Urbanist_600SemiBold",
   },
 
   secondaryButton: {
@@ -443,9 +456,8 @@ const styles = StyleSheet.create({
   secondaryText: {
     color: C.text,
     fontSize: 15,
-    fontWeight: "500",
+    fontFamily: "Urbanist_500Medium",
   },
-
   securityNote: {
     flexDirection: "row",
     alignItems: "center",
@@ -455,6 +467,7 @@ const styles = StyleSheet.create({
   securityText: {
     fontSize: 12,
     color: C.muted,
+    fontFamily: "Urbanist_400Regular",
   },
 
   // GLASS INVENTORY PREVIEW
@@ -488,7 +501,7 @@ const styles = StyleSheet.create({
     color: C.muted,
     fontSize: 10,
     letterSpacing: 1.5,
-    fontWeight: "500",
+    fontFamily: "Urbanist_500Medium",
   },
 
   previewValue: {
@@ -501,13 +514,14 @@ const styles = StyleSheet.create({
   value: {
     color: C.text,
     fontSize: 38,
-    fontWeight: "300",
+    fontFamily: "Urbanist_300Light",
     letterSpacing: -1.5,
   },
 
   previewCaption: {
     color: C.muted,
     fontSize: 12,
+    fontFamily: "Urbanist_400Regular",
   },
 
   previewRow: {
@@ -522,13 +536,14 @@ const styles = StyleSheet.create({
   previewItem: {
     color: C.text,
     fontSize: 14,
+    fontFamily: "Urbanist_400Regular",
     flex: 1,
   },
 
   previewPrice: {
     color: C.text,
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: "Urbanist_500Medium",
   },
 
   previewFooter: {
@@ -541,6 +556,7 @@ const styles = StyleSheet.create({
   previewFooterText: {
     color: C.accent,
     fontSize: 12,
+    fontFamily: "Urbanist_400Regular",
   },
 
   // FEATURES
@@ -585,12 +601,13 @@ const styles = StyleSheet.create({
     color: C.muted,
     fontSize: 12,
     letterSpacing: 1,
+    fontFamily: "Urbanist_500Medium",
   },
 
   featureTitle: {
     color: C.text,
     fontSize: 30,
-    fontWeight: "300",
+    fontFamily: "Urbanist_300Light",
     letterSpacing: -1,
   },
 
@@ -598,6 +615,20 @@ const styles = StyleSheet.create({
     color: C.muted,
     fontSize: 15,
     lineHeight: 24,
+    fontFamily: "Urbanist_400Regular",
+  },
+
+  ctaTitle: {
+    color: C.text,
+    fontSize: 36,
+    fontFamily: "Urbanist_300Light",
+    letterSpacing: -1,
+  },
+
+  footerText: {
+    color: C.muted,
+    fontSize: 12,
+    fontFamily: "Urbanist_400Regular",
   },
 
   // CALL TO ACTION
@@ -616,11 +647,10 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 16,
   },
-
   ctaTitle: {
     color: C.text,
     fontSize: 36,
-    fontWeight: "300",
+    fontFamily: "Urbanist_300Light",
     letterSpacing: -1,
   },
 
@@ -639,5 +669,6 @@ const styles = StyleSheet.create({
   footerText: {
     color: C.muted,
     fontSize: 12,
+    fontFamily: "Urbanist_400Regular",
   },
 });
