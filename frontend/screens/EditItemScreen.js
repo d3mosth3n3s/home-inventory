@@ -102,14 +102,13 @@ function EditForm({ item, navigation }) {
   });
   const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
 
-  const categoryOpts = useEditableOptions(
-    withValue(CATEGORIES, item.category),
-    set("category"),
-  );
-  const roomOpts = useEditableOptions(
-    withValue(ROOMS, item.room_location),
-    set("roomLocation"),
-  );
+  const categoryOpts = useEditableOptions("category", set("category"), [
+    item.category,
+  ]);
+
+  const roomOpts = useEditableOptions("room", set("roomLocation"), [
+    item.room_location,
+  ]);
 
   const [newImageUri, setNewImageUri] = useState(null);
   const [saving, setSaving] = useState(false);

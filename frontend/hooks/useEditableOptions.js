@@ -1,28 +1,105 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useOptions, mergeOptions } from "../context/OptionsContext";
+import { useItems } from "../context/ItemsContext";
 
 export const ADD_NEW = "__add_new__";
 
-export default function useEditableOptions(initial, onSelect) {
-  const [options, setOptions] = useState(initial);
+export default function useEditableOptions(kind, onSelect, initial = []) {
+  const { rooms, categories, addOption } = useOptions();
+  const { items } = useItems();
+
   const [adding, setAdding] = useState(false);
   const [text, setText] = useState("");
+  const [temporaryOptions, setTemporaryOptions] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleChange = (value) =>
-    value === ADD_NEW ? setAdding(true) : onSelect(value);
+  const savingRef = useRef(false);
 
-  const confirm = () => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    setOptions((prev) => [...prev, trimmed]);
-    onSelect(trimmed);
-    setText("");
-    setAdding(false);
+  const savedOptions = kind === "room" ? rooms : categories;
+
+  const existingItemOptions = items.map((item) =>
+    kind === "room" ? item.room_location : item.category,
+  );
+
+  const options = mergeOptions(
+    savedOptions,
+    initial,
+    existingItemOptions,
+    temporaryOptions,
+  );
+
+  const handleChange = (value) => {
+    if (savingRef.current) return;
+
+    setError("");
+
+    if (value === ADD_NEW) {
+      setAdding(true);
+    } else {
+      setAdding(false);
+      setText("");
+      onSelect(value);
+    }
   };
 
-  // used when a scan returns a category that isn't in the list yet
-  // maybe force scan to use existing category??
-  const ensure = (value) =>
-    setOptions((prev) => (prev.includes(value) ? prev : [...prev, value]));
+  const cancel = () => {
+    if (savingRef.current) return;
 
-  return { options, adding, text, setText, handleChange, confirm, ensure };
+    setAdding(false);
+    setText("");
+    setError("");
+  };
+
+  const confirm = async () => {
+    if (savingRef.current) return;
+
+    const trimmed = text.trim();
+
+    if (!trimmed) {
+      setError("Please enter a name.");
+      return;
+    }
+
+    if (trimmed.length > 50) {
+      setError("Names cannot exceed 50 characters.");
+      return;
+    }
+
+    savingRef.current = true;
+    setSaving(true);
+    setError("");
+
+    try {
+      const name = await addOption(kind, trimmed);
+
+      onSelect(name);
+
+      setText("");
+      setAdding(false);
+    } catch (err) {
+      setError(err.message || "Couldn't save this option.");
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
+  };
+
+  // AI-generated categories remain available locally until saved.
+  const ensure = (value) => {
+    setTemporaryOptions((prev) => mergeOptions(prev, [value]));
+  };
+
+  return {
+    options,
+    adding,
+    text,
+    setText,
+    saving,
+    error,
+    handleChange,
+    confirm,
+    cancel,
+    ensure,
+  };
 }

@@ -9,6 +9,7 @@ import {
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ItemsProvider } from "./context/ItemsContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
+import { OptionsProvider } from "./context/OptionsContext";
 
 import AppNavigator from "./navigation/AppNavigator";
 import LoginScreen from "./screens/LoginScreen";
@@ -85,9 +86,11 @@ function Root() {
 
   return (
     <ItemsProvider key={session.user.id}>
-      <NavigationContainer linking={linking} theme={navTheme}>
-        <AppNavigator />
-      </NavigationContainer>
+      <OptionsProvider>
+        <NavigationContainer linking={linking} theme={navTheme}>
+          <AppNavigator />
+        </NavigationContainer>
+      </OptionsProvider>
     </ItemsProvider>
   );
 }

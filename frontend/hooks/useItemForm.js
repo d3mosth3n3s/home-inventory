@@ -53,15 +53,9 @@ export default function useItemForm() {
     setForm((f) => ({ ...f, [key]: value }));
   };
 
-  const categoryOpts = useEditableOptions(
-    ["Electronics", "Furniture", "Jewelry", "Appliance", "Other"],
-    set("category"),
-  );
+  const categoryOpts = useEditableOptions("category", set("category"));
 
-  const roomOpts = useEditableOptions(
-    ["Living Room", "Bedroom", "Kitchen", "Garage", "Office", "Other"],
-    set("roomLocation"),
-  );
+  const roomOpts = useEditableOptions("room", set("roomLocation"));
 
   const snapshot = () => ({
     item_name: form.name,
