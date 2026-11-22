@@ -1,9 +1,10 @@
 import React, { useMemo } from "react";
-import { View, Text, Pressable, Switch, StyleSheet } from "react-native";
+import { View, Text, Pressable, Switch, StyleSheet, Image } from "react-native";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import { useFonts, Urbanist_400Regular } from "@expo-google-fonts/urbanist";
 
 const NAV_ITEMS = [
   { label: "Dashboard", route: "Dashboard", icon: "home" },
@@ -21,7 +22,13 @@ export default function Sidebar({ state, navigation, ...rest }) {
     navigation.navigate(route);
     navigation.closeDrawer(); // closes the mobile drawer; harmless when permanent
   };
+  const [fontsLoaded, fontError] = useFonts({
+    Urbanist_400Regular,
+  });
 
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
   const handleSignOut = async () => {
     const { error } = await signOut();
 
@@ -39,7 +46,15 @@ export default function Sidebar({ state, navigation, ...rest }) {
     >
       {/* ---------- TOP: brand ---------- */}
       <View style={styles.brand}>
-        <View style={styles.logoPlaceholder} />
+        <Image
+          source={
+            isDark
+              ? require("../assets/logo.png")
+              : require("../assets/logo-light.png")
+          }
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.title}>ReCovered</Text>
       </View>
 
@@ -113,13 +128,16 @@ const makeStyles = (c) =>
       padding: 20,
       gap: 12,
     },
-    logoPlaceholder: {
+    logo: {
       width: 32,
       height: 32,
-      borderRadius: 6,
-      backgroundColor: c.border,
     },
-    title: { fontSize: 22, fontWeight: "bold", color: c.text },
+    title: {
+      fontSize: 30,
+      fontFamily: "Urbanist_400Regular",
+      color: c.text,
+      letterSpacing: -1,
+    },
     email: {
       fontSize: 13,
       color: c.mutedText,
