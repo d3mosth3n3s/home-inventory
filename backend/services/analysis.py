@@ -304,4 +304,6 @@ def analyze_image(image, boxes=None, mode="single") -> dict:
     return {
         "boxes": detected_boxes,
         "items": items,
+        "image_width": width,
+        "image_height": height,
     }

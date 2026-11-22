@@ -31,6 +31,7 @@ export default function useItemForm() {
   const [analysisMode, setAnalysisMode] = useState("single");
   const [form, setForm] = useState(EMPTY_FORM);
   const [imageUri, setImageUri] = useState(null);
+  const [analysisSize, setAnalysisSize] = useState(null);
   const [formKey, setFormKey] = useState(0);
 
   const [analyzing, setAnalyzing] = useState(false);
@@ -84,7 +85,7 @@ export default function useItemForm() {
         item.purchase_price != null ? String(item.purchase_price) : "",
       condition: item.condition || "good",
       category,
-      roomLocation: item.room_location || "Living Room",
+      roomLocation: item.room_location || "Unassigned",
     });
   };
 
@@ -98,13 +99,19 @@ export default function useItemForm() {
     setSubmitError("");
     setSuccessMessage("");
     setDetectedItems([]);
+    setAnalysisSize(null);
     setSelectedIndex(0);
     setAnalyzing(true);
 
     try {
       const response = await analyzeImage(uri, mode);
       const found = response.data?.items || [];
+      const width = response.data?.image_width;
+      const height = response.data?.image_height;
 
+      if (width > 0 && height > 0) {
+        setAnalysisSize({ width, height });
+      }
       setDetectedItems(found);
 
       if (!found[0]) {
@@ -272,5 +279,6 @@ export default function useItemForm() {
     submit,
     analysisMode,
     changeAnalysisMode,
+    analysisSize,
   };
 }

@@ -139,8 +139,11 @@ export default function AddItemScreen() {
               onImagePicked={f.handleImagePicked}
               disabled={f.busy}
               analyzing={f.analyzing}
+              detectedItems={f.detectedItems}
+              selectedIndex={f.selectedIndex}
+              onSelect={f.selectDetected}
+              analysisSize={f.analysisSize}
             />
-
             {/* ANALYSIS STATUS */}
 
             {f.analyzing && (
@@ -201,14 +204,13 @@ export default function AddItemScreen() {
                 pointerEvents={f.busy ? "none" : "auto"}
                 style={[styles.scanSection, f.busy && styles.disabledForm]}
               >
-                <Text style={styles.sectionTitle}>Detected Objects</Text>
-
                 <ScanResults
                   detectedItems={f.detectedItems}
                   selectedIndex={f.selectedIndex}
                   currentName={form.name}
                   onSelect={f.selectDetected}
                   onRemove={f.removeDetected}
+                  disabled={f.busy}
                 />
               </View>
             )}
