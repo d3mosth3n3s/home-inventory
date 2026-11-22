@@ -17,6 +17,8 @@ export const DEFAULT_ROOMS = [
   "Kitchen",
   "Garage",
   "Office",
+  "Bathroom",
+  "Hall / Closet",
   "Unassigned",
 ];
 

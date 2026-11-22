@@ -12,17 +12,17 @@ export default function DashboardScreen({ navigation }) {
   const recent = items.slice(0, 5); // flip with .slice(-5).reverse() if your API returns oldest-first
 
   return (
-  <ScrollView contentContainerStyle={styles.page}>
-    <LoginDisclaimer />
+    <ScrollView contentContainerStyle={styles.page}>
+      <LoginDisclaimer />
 
-    <View style={styles.headerRow}>
-      <Text style={styles.title}>Insured Assets</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>Insured Assets</Text>
 
         <Pressable
           style={styles.addButton}
           onPress={() => navigation.navigate("AddItem")}
         >
-          <Text style={styles.addButtonText}>Add Item?</Text>
+          <Text style={styles.addButtonText}>Add Item</Text>
         </Pressable>
       </View>
 
