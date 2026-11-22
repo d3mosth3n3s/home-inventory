@@ -16,6 +16,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from backend.services.analysis import analyze_image
+from fastapi import Form
+from typing import Literal
 
 load_dotenv()
 app = FastAPI(title="Home Inventory API", version="0.1.0")
@@ -346,19 +348,34 @@ def upload_photo(
 
 @app.post("/api/analyze-image")
 def analyze_uploaded_image(
-    image: UploadFile = File(...), user_id: str = Depends(get_current_user)
+    image: UploadFile = File(...),
+    mode: Literal["single", "multiple"] = Form("single"),
+    user_id: str = Depends(get_current_user),
 ) -> dict:
+
     contents = image.file.read(10 * 1024 * 1024 + 1)
+
     if len(contents) > 10 * 1024 * 1024:
         raise HTTPException(413, "Image exceeds 10 MB")
+
     try:
         from PIL import Image
 
-        analyzed = analyze_image(Image.open(io.BytesIO(contents)).convert("RGB"))
+        analyzed = analyze_image(
+            Image.open(io.BytesIO(contents)).convert("RGB"),
+            mode=mode,
+        )
+
     except FileNotFoundError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=503,
+            detail=str(exc),
+        ) from exc
+
     except Exception as exc:
         raise HTTPException(
-            status_code=400, detail=f"Unable to analyze image: {exc}"
+            status_code=400,
+            detail=f"Unable to analyze image: {exc}",
         ) from exc
+
     return analyzed

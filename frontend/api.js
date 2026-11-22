@@ -86,15 +86,14 @@ const appendImage = async (formData, uri, fieldName) => {
   }
 };
 
-// Image analysis
-export const analyzeImage = async (uri) => {
+export const analyzeImage = async (uri, mode = "single") => {
   const formData = new FormData();
 
   await appendImage(formData, uri, "image");
+  formData.append("mode", mode);
 
   return client.post("/analyze-image", formData);
 };
-
 // Photo upload
 export const uploadPhoto = async (itemId, uri) => {
   const formData = new FormData();
