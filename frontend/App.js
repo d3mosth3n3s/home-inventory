@@ -20,7 +20,9 @@ const linking = {
     screens: {
       Dashboard: "",
       Inventory: "inventory",
+      Rooms: "rooms",
       AddItem: "inventory/new",
+      EditItem: "inventory/:id/edit",
     },
   },
 };
