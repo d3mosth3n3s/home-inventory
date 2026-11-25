@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from backend.services.analysis import analyze_image
+from backend.pdf_export import generate_inventory_pdf
 from fastapi import Form
 from typing import Literal
 
@@ -208,6 +209,32 @@ def export_items(user_id: str = Depends(get_current_user)):
         },
     )
 
+@app.get("/api/items/export/pdf")
+def export_items_pdf(user_id: str = Depends(get_current_user)):
+    with closing(connection()) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT * FROM items
+                WHERE user_id = %s
+                ORDER BY room_location, name
+                """,
+                (user_id,),
+            )
+            items = cursor.fetchall()
+
+    pdf = generate_inventory_pdf(items)
+
+    return StreamingResponse(
+        pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": (
+                "attachment; filename=ReCovered_Inventory.pdf"
+            ),
+            "Cache-Control": "no-store",
+        },
+    )
 
 @app.get("/api/items/{item_id}")
 def get_item(item_id: int, user_id: str = Depends(get_current_user)) -> dict:

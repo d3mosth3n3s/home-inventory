@@ -6,12 +6,17 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
+  Platform,
+  ActivityIndicator,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
 import { useItems } from "../context/ItemsContext";
 import { useTheme } from "../context/ThemeContext";
 import ItemRow from "../components/ItemRow";
+import { exportItemsPdf } from "../api";
+
+
 
 export default function InventoryScreen() {
   const { items } = useItems();
@@ -22,6 +27,8 @@ export default function InventoryScreen() {
   const [category, setCategory] = useState("");
   const [room, setRoom] = useState("");
   const [sort, setSort] = useState("newest");
+  const [exporting, setExporting] = useState(false);
+const [exportError, setExportError] = useState("");
 
   // Generate filter options from existing inventory
   const categories = useMemo(
@@ -97,6 +104,48 @@ export default function InventoryScreen() {
     setSort("newest");
   };
 
+const handleExportPdf = async () => {
+  if (exporting) return;
+
+  setExporting(true);
+  setExportError("");
+
+  try {
+    if (Platform.OS !== "web") {
+      setExportError(
+        "PDF export is currently available on the web version."
+      );
+      return;
+    }
+
+    const response = await exportItemsPdf();
+
+    const blob = new Blob([response.data], {
+      type: "application/pdf",
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "ReCovered_Inventory.pdf";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (error) {
+    console.error("PDF export failed:", error);
+
+    setExportError(
+      "Unable to export inventory. Please try again."
+    );
+  } finally {
+    setExporting(false);
+  }
+};
+
   return (
     <FlatList
       contentContainerStyle={styles.page}
@@ -105,9 +154,44 @@ export default function InventoryScreen() {
       keyboardShouldPersistTaps="handled"
       ListHeaderComponent={
         <View style={styles.header}>
-          {/* TITLE */}
+          {/* TITLE AND PDF EXPORT*/}
 
-          <Text style={styles.title}>Inventory</Text>
+          {/* TITLE AND PDF EXPORT */}
+
+<View style={styles.titleRow}>
+  <Text style={styles.title}>Inventory</Text>
+
+  <Pressable
+    style={[
+      styles.exportButton,
+      exporting && styles.exportButtonDisabled,
+    ]}
+    onPress={handleExportPdf}
+    disabled={exporting}
+    accessibilityRole="button"
+    accessibilityLabel="Export inventory as PDF"
+  >
+    {exporting ? (
+      <ActivityIndicator size="small" color="#FFFFFF" />
+    ) : (
+      <Ionicons
+        name="download-outline"
+        size={20}
+        color="#FFFFFF"
+      />
+    )}
+
+    <Text style={styles.exportButtonText}>
+      {exporting ? "Exporting..." : "Export as PDF"}
+    </Text>
+  </Pressable>
+</View>
+
+{!!exportError && (
+  <Text style={styles.exportError}>
+    {exportError}
+  </Text>
+)}
 
           {/* SEARCH */}
 
@@ -281,6 +365,42 @@ const makeStyles = (c) =>
       fontWeight: "bold",
       color: c.text,
     },
+
+    // PDF EXPORT
+
+titleRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  flexWrap: "wrap",
+  gap: 12,
+},
+
+exportButton: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: c.accent,
+  paddingHorizontal: 14,
+  paddingVertical: 10,
+  borderRadius: 6,
+  gap: 8,
+},
+
+exportButtonText: {
+  color: "#FFFFFF",
+  fontSize: 14,
+  fontWeight: "600",
+},
+
+exportButtonDisabled: {
+  opacity: 0.6,
+},
+
+exportError: {
+  color: "#D32F2F",
+  fontSize: 13,
+},
 
     // SEARCH
 

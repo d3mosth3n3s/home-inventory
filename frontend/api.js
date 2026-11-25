@@ -54,6 +54,12 @@ export const exportItems = () =>
     responseType: "blob",
   });
 
+// Authenticated PDF export
+export const exportItemsPdf = () =>
+  client.get("/items/export/pdf", {
+    responseType: "blob",
+  });
+
 // Keep this for compatibility, but do not use it
 // for authenticated downloads.
 export const getExportUrl = () => `${API_BASE}/items/export`;
